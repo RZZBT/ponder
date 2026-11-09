@@ -1,0 +1,851 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ponder.invalid/schema/ponder-v1.schema.json",
+  "title": "Ponder animation document (format version 1)",
+  "description": "Structural schema for META-INF/ponder/ponder.json. Cross-references (slide ids, actor ids, parents, symbols) and numeric limits are additionally enforced by the Ponder validator, which gives path-addressed error messages.",
+  "type": "object",
+  "required": [
+    "version",
+    "library",
+    "animations"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "//": {
+      "$ref": "#/$defs/comment"
+    },
+    "version": {
+      "const": 1,
+      "description": "Format version. Ponder v1 files must say 1."
+    },
+    "library": {
+      "type": "object",
+      "description": "The package these animations belong to. Checked against the package that declares the symbol when the IDE can tell.",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "//": {
+          "$ref": "#/$defs/comment"
+        },
+        "group": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Maven groupId (JVM). Omit for other ecosystems."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Maven artifactId, npm/PyPI/NuGet/crate name, or Go module path."
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Informational only."
+        }
+      }
+    },
+    "animations": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 64,
+      "propertyNames": {
+        "$ref": "#/$defs/id"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/animation"
+      }
+    }
+  },
+  "$defs": {
+    "comment": {
+      "description": "A note for people reading the file: a string, or a list of strings for several lines. Allowed in every object; Ponder ignores it.",
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 1000
+        },
+        {
+          "type": "array",
+          "maxItems": 50,
+          "items": {
+            "type": "string",
+            "maxLength": 1000
+          }
+        }
+      ]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$",
+      "maxLength": 64
+    },
+    "symbol": {
+      "type": "string",
+      "maxLength": 512,
+      "pattern": "^((jvm:)?[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*#(?:<init>|[A-Za-z_$][\\w$]*)\\((?:(?:boolean|byte|char|short|int|long|float|double|[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)+)(?:\\[\\])*(?:,(?:boolean|byte|char|short|int|long|float|double|[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)+)(?:\\[\\])*)*)?\\)|py:[A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*|js:(?:@[\\w.-]+\\/)?[\\w.-]+(?:\\/[\\w.-]+)*#[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*|dotnet:[MTPFE]:[\\w.#\\x60{}@*\\[\\],]+(?:\\([\\w.#\\x60{}@*\\[\\],]*\\))?|go:[\\w.~-]+(?:\\/[\\w.~-]+)*\\.[A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)?|rust:[A-Za-z_]\\w*(?:::[A-Za-z_]\\w*)+|cpp:[A-Za-z_]\\w*(?:::~?[A-Za-z_]\\w*)*(?:\\([\\w:,*&<> ]*\\))?|sym:[\\w.-]+(?:\\/[\\w.-]+)*:[^\\s:]+)$",
+      "description": "Method or function this animation explains. No prefix: JVM, e.g. com.example.MathUtils#clamp(int,int,int). Prefixes: py:, js:, dotnet:, go:, rust:, cpp:, and sym:<path>:<Outer.name> for any language. See docs/ponder-format.md."
+    },
+    "color": {
+      "description": "#rgb, #rgba, #rrggbb, #rrggbbaa or a theme token (adapts to dark/light).",
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$"
+        },
+        {
+          "enum": [
+            "none",
+            "text",
+            "muted",
+            "accent",
+            "accent2",
+            "success",
+            "warning",
+            "danger",
+            "surface"
+          ]
+        }
+      ]
+    },
+    "coord": {
+      "type": "number",
+      "minimum": -100000,
+      "maximum": 100000
+    },
+    "size": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "strokeWidth": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "points": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 64,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "$ref": "#/$defs/coord"
+        }
+      }
+    },
+    "common": {
+      "type": "object",
+      "properties": {
+        "//": {
+          "$ref": "#/$defs/comment"
+        },
+        "x": {
+          "$ref": "#/$defs/coord"
+        },
+        "y": {
+          "$ref": "#/$defs/coord"
+        },
+        "rotation": {
+          "type": "number",
+          "minimum": -36000,
+          "maximum": 36000,
+          "description": "Degrees, clockwise, around the actor's anchor."
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "z": {
+          "type": "integer",
+          "minimum": -1000,
+          "maximum": 1000
+        }
+      }
+    },
+    "easing": {
+      "oneOf": [
+        {
+          "enum": [
+            "linear",
+            "ease-in",
+            "ease-out",
+            "ease-in-out",
+            "back-out"
+          ]
+        },
+        {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "items": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 3
+          },
+          "description": "cubic-bezier [x1, y1, x2, y2]; x values must be within 0..1."
+        }
+      ]
+    },
+    "actorRectangle": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "rectangle"
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "x": true,
+        "y": true,
+        "rotation": true,
+        "scale": true,
+        "opacity": true,
+        "visible": true,
+        "z": true,
+        "width": {
+          "$ref": "#/$defs/size"
+        },
+        "height": {
+          "$ref": "#/$defs/size"
+        },
+        "cornerRadius": {
+          "$ref": "#/$defs/size"
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "$ref": "#/$defs/strokeWidth"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "unevaluatedProperties": false
+    },
+    "actorCircle": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "circle"
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "x": true,
+        "y": true,
+        "rotation": true,
+        "scale": true,
+        "opacity": true,
+        "visible": true,
+        "z": true,
+        "radius": {
+          "$ref": "#/$defs/size"
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "$ref": "#/$defs/strokeWidth"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "unevaluatedProperties": false
+    },
+    "actorEllipse": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "ellipse"
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "x": true,
+        "y": true,
+        "rotation": true,
+        "scale": true,
+        "opacity": true,
+        "visible": true,
+        "z": true,
+        "width": {
+          "$ref": "#/$defs/size"
+        },
+        "height": {
+          "$ref": "#/$defs/size"
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "$ref": "#/$defs/strokeWidth"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "unevaluatedProperties": false
+    },
+    "actorText": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "text"
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "x": true,
+        "y": true,
+        "rotation": true,
+        "scale": true,
+        "opacity": true,
+        "visible": true,
+        "z": true,
+        "text": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Plain text. Never interpreted as HTML."
+        },
+        "fontSize": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "anchor": {
+          "enum": [
+            "start",
+            "middle",
+            "end"
+          ]
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "unevaluatedProperties": false
+    },
+    "actorLine": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "line",
+            "arrow"
+          ]
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "x": true,
+        "y": true,
+        "rotation": true,
+        "scale": true,
+        "opacity": true,
+        "visible": true,
+        "z": true,
+        "width": {
+          "$ref": "#/$defs/coord",
+          "description": "Horizontal extent from the start point (may be negative)."
+        },
+        "height": {
+          "$ref": "#/$defs/coord",
+          "description": "Vertical extent from the start point (may be negative)."
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "$ref": "#/$defs/strokeWidth"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "unevaluatedProperties": false
+    },
+    "actorPolygon": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "polygon"
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "x": true,
+        "y": true,
+        "rotation": true,
+        "scale": true,
+        "opacity": true,
+        "visible": true,
+        "z": true,
+        "points": {
+          "$ref": "#/$defs/points"
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "$ref": "#/$defs/strokeWidth"
+        }
+      },
+      "required": [
+        "type",
+        "points"
+      ],
+      "unevaluatedProperties": false
+    },
+    "actorGroup": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/common"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "group"
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "x": true,
+        "y": true,
+        "rotation": true,
+        "scale": true,
+        "opacity": true,
+        "visible": true,
+        "z": true
+      },
+      "required": [
+        "type"
+      ],
+      "unevaluatedProperties": false
+    },
+    "actor": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/actorRectangle"
+        },
+        {
+          "$ref": "#/$defs/actorCircle"
+        },
+        {
+          "$ref": "#/$defs/actorEllipse"
+        },
+        {
+          "$ref": "#/$defs/actorText"
+        },
+        {
+          "$ref": "#/$defs/actorLine"
+        },
+        {
+          "$ref": "#/$defs/actorPolygon"
+        },
+        {
+          "$ref": "#/$defs/actorGroup"
+        }
+      ]
+    },
+    "change": {
+      "description": "Property changes for one actor. Legal properties depend on the actor's type; the validator checks that.",
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "//",
+          "x",
+          "y",
+          "rotation",
+          "scale",
+          "opacity",
+          "visible",
+          "z",
+          "width",
+          "height",
+          "radius",
+          "cornerRadius",
+          "fill",
+          "stroke",
+          "strokeWidth",
+          "text",
+          "fontSize",
+          "anchor",
+          "points"
+        ]
+      },
+      "properties": {
+        "//": {
+          "$ref": "#/$defs/comment"
+        },
+        "x": {
+          "$ref": "#/$defs/coord"
+        },
+        "y": {
+          "$ref": "#/$defs/coord"
+        },
+        "rotation": {
+          "type": "number",
+          "minimum": -36000,
+          "maximum": 36000
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "z": {
+          "type": "integer",
+          "minimum": -1000,
+          "maximum": 1000
+        },
+        "width": {
+          "$ref": "#/$defs/coord"
+        },
+        "height": {
+          "$ref": "#/$defs/coord"
+        },
+        "radius": {
+          "$ref": "#/$defs/size"
+        },
+        "cornerRadius": {
+          "$ref": "#/$defs/size"
+        },
+        "fill": {
+          "$ref": "#/$defs/color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/color"
+        },
+        "strokeWidth": {
+          "$ref": "#/$defs/strokeWidth"
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "fontSize": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 200
+        },
+        "anchor": {
+          "enum": [
+            "start",
+            "middle",
+            "end"
+          ]
+        },
+        "points": {
+          "$ref": "#/$defs/points"
+        }
+      }
+    },
+    "slide": {
+      "type": "object",
+      "description": "One step. The timing fields (trigger, duration, ...) say how this slide is reached; not allowed on the first slide.",
+      "additionalProperties": false,
+      "properties": {
+        "//": {
+          "$ref": "#/$defs/comment"
+        },
+        "id": {
+          "$ref": "#/$defs/id",
+          "description": "Optional. Only needed if a \"transitions\" entry refers to this slide."
+        },
+        "caption": {
+          "type": "string",
+          "maxLength": 400,
+          "description": "Explanation shown below the scene while this slide is current."
+        },
+        "changes": {
+          "type": "object",
+          "description": "Only what changes relative to the previous slide: { actorId: { property: value } }. Everything else is inherited.",
+          "propertyNames": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/id"
+              },
+              {
+                "const": "//"
+              }
+            ]
+          },
+          "properties": {
+            "//": {
+              "$ref": "#/$defs/comment"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/change"
+          }
+        },
+        "trigger": {
+          "$ref": "#/$defs/transition/properties/trigger"
+        },
+        "style": {
+          "$ref": "#/$defs/transition/properties/style"
+        },
+        "duration": {
+          "$ref": "#/$defs/transition/properties/duration"
+        },
+        "delay": {
+          "$ref": "#/$defs/transition/properties/delay"
+        },
+        "easing": {
+          "$ref": "#/$defs/transition/properties/easing"
+        },
+        "stagger": {
+          "$ref": "#/$defs/transition/properties/stagger"
+        },
+        "order": {
+          "$ref": "#/$defs/transition/properties/order"
+        }
+      }
+    },
+    "transition": {
+      "type": "object",
+      "required": [
+        "to"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "//": {
+          "$ref": "#/$defs/comment"
+        },
+        "from": {
+          "$ref": "#/$defs/id",
+          "description": "Optional; must be the slide right before 'to'."
+        },
+        "to": {
+          "$ref": "#/$defs/id",
+          "description": "The slide this transition leads into."
+        },
+        "trigger": {
+          "enum": [
+            "auto",
+            "next"
+          ],
+          "default": "next",
+          "description": "auto: advances by itself after 'delay'. next: waits for the user."
+        },
+        "style": {
+          "enum": [
+            "direct",
+            "fluid"
+          ],
+          "default": "fluid",
+          "description": "direct: switch instantly. fluid: interpolate all properties."
+        },
+        "duration": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000,
+          "default": 600,
+          "description": "Milliseconds. Ignored for direct."
+        },
+        "delay": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10000,
+          "description": "Milliseconds to wait on the source slide before an auto transition starts. Default 500 for auto, 0 for next."
+        },
+        "easing": {
+          "$ref": "#/$defs/easing",
+          "default": "ease-in-out"
+        },
+        "stagger": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2000,
+          "default": 0,
+          "description": "Milliseconds between the start of consecutive actors in 'order'."
+        },
+        "order": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "maxItems": 200,
+          "description": "Actors to stagger, in start order. Unlisted actors start together with the first one. Without \"order\", stagger follows document order."
+        }
+      }
+    },
+    "animation": {
+      "type": "object",
+      "required": [
+        "symbol",
+        "title",
+        "actors",
+        "slides"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "//": {
+          "$ref": "#/$defs/comment"
+        },
+        "symbol": {
+          "$ref": "#/$defs/symbol"
+        },
+        "aliases": {
+          "type": "array",
+          "maxItems": 16,
+          "items": {
+            "$ref": "#/$defs/symbol"
+          },
+          "description": "Extra symbols (e.g. forwarding overloads) that show this same animation. Must belong to the same library."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "scene": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "//": {
+              "$ref": "#/$defs/comment"
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 4000,
+              "default": 1000
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 100,
+              "maximum": 4000,
+              "default": 600
+            },
+            "background": {
+              "$ref": "#/$defs/color"
+            }
+          }
+        },
+        "autoAdvance": {
+          "description": "true: every slide moves on by itself after a short pause (1.5 s). A number: after that many milliseconds. A slide with \"trigger\": \"next\" still waits for the user.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10000
+            }
+          ]
+        },
+        "actors": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 201,
+          "propertyNames": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/id"
+              },
+              {
+                "const": "//"
+              }
+            ]
+          },
+          "properties": {
+            "//": {
+              "$ref": "#/$defs/comment"
+            }
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/actor"
+          }
+        },
+        "slides": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 60,
+          "items": {
+            "$ref": "#/$defs/slide"
+          }
+        },
+        "transitions": {
+          "type": "array",
+          "maxItems": 60,
+          "items": {
+            "$ref": "#/$defs/transition"
+          }
+        }
+      }
+    }
+  }
+}

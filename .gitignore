@@ -1,0 +1,25 @@
+# Build outputs
+build/
+dist/
+
+# Node modules
+node_modules/
+
+# Gradle
+.gradle/
+
+# IDE
+.idea/
+.intellijPlatform/
+.kotlin/
+*.iml
+
+# VS Code
+.vscode/
+
+# Sixix package
+*.vsix
+
+# OS
+.DS_Store
+Thumbs.db
