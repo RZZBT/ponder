@@ -1,0 +1,101 @@
+{
+  "name": "ponder",
+  "displayName": "Ponder",
+  "description": "Animated explanations of library functions, written by the library's authors in ponder.json.",
+  "version": "0.1.0",
+  "publisher": "ponder",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Education"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ponder.open",
+        "title": "Open Ponder",
+        "category": "Ponder"
+      },
+      {
+        "command": "ponder.copySymbol",
+        "title": "Copy Ponder Symbol",
+        "category": "Ponder"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "ponder.open",
+        "key": "alt+w",
+        "when": "editorTextFocus"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "ponder.open",
+          "group": "navigation@90"
+        },
+        {
+          "command": "ponder.copySymbol",
+          "group": "9_cutcopypaste@90"
+        }
+      ]
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          "ponder.json",
+          "**/META-INF/ponder/ponder.json"
+        ],
+        "url": "./media/ponder.schema.json"
+      }
+    ],
+    "configuration": {
+      "title": "Ponder",
+      "properties": {
+        "ponder.autoplay": {
+          "type": "boolean",
+          "default": true,
+          "description": "Start playing when the animation opens."
+        },
+        "ponder.reducedMotion": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ],
+          "default": "auto",
+          "enumDescriptions": [
+            "Follow the operating system setting",
+            "Always jump between steps without movement",
+            "Always animate"
+          ],
+          "description": "Reduce motion: steps switch instantly and nothing advances by itself."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:integration": "node build.mjs && node test-integration/run.mjs",
+    "package": "node build.mjs && npx --yes @vscode/vsce@3.2.1 package --no-dependencies --allow-missing-repository -o ponder.vsix",
+    "test:languages": "node build.mjs && node test-integration/polyglot.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "1.90.0",
+    "@vscode/test-electron": "2.4.1",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0"
+  }
+}

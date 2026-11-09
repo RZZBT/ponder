@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <!-- "ponder-demo-jdk" is registered automatically in the runIde sandbox. In your own IDE, pick any JDK 17+ when asked. -->
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_17" project-jdk-name="ponder-demo-jdk" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

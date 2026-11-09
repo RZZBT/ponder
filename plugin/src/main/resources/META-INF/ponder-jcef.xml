@@ -1,0 +1,3 @@
+<idea-plugin>
+  <!-- Present only so that the JCEF plugin classes are visible to this plugin when JCEF is installed. -->
+</idea-plugin>

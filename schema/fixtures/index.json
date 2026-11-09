@@ -1,0 +1,333 @@
+[
+  {
+    "file": "valid-minimal.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "valid-group-and-polygon.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "valid-friendly-format.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "invalid-timing-on-first-slide.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.slides[0].trigger",
+        "messageContains": "first slide is shown as soon as"
+      }
+    ]
+  },
+  {
+    "file": "invalid-timing-in-two-places.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.transitions[0].to",
+        "messageContains": "already sets its own timing"
+      }
+    ]
+  },
+  {
+    "file": "invalid-auto-advance.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.autoAdvance",
+        "messageContains": "Expected true, false or a number"
+      }
+    ]
+  },
+  {
+    "file": "invalid-comment-not-text.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.slides[0].//",
+        "messageContains": "Expected a string"
+      }
+    ]
+  },
+  {
+    "file": "invalid-bad-symbol.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.symbol",
+        "messageContains": "not a valid symbol"
+      }
+    ]
+  },
+  {
+    "file": "invalid-duplicate-symbol-via-alias.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.aliases[0]",
+        "messageContains": "already bound"
+      }
+    ]
+  },
+  {
+    "file": "invalid-unknown-actor-property.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.x.radus",
+        "messageContains": "Did you mean \"radius\"?"
+      }
+    ]
+  },
+  {
+    "file": "invalid-property-wrong-for-type.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.x.width",
+        "messageContains": "not a property of circle actors"
+      }
+    ]
+  },
+  {
+    "file": "invalid-unknown-actor-in-slide.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.slides[1].changes.ghost",
+        "messageContains": "Unknown actor \"ghost\""
+      }
+    ]
+  },
+  {
+    "file": "invalid-type-mismatch.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.x.x",
+        "messageContains": "Expected a number but found the string \"250\""
+      }
+    ]
+  },
+  {
+    "file": "invalid-number-range.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.x.opacity",
+        "messageContains": "out of range"
+      }
+    ]
+  },
+  {
+    "file": "invalid-color.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.x.fill",
+        "messageContains": "Expected a color"
+      }
+    ]
+  },
+  {
+    "file": "invalid-transition-target.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.transitions[0].to",
+        "messageContains": "Unknown slide \"s22\". Did you mean \"s2\"?"
+      }
+    ]
+  },
+  {
+    "file": "invalid-transition-from-not-previous.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.transitions[0].from",
+        "messageContains": "just before it (\"s2\")"
+      }
+    ]
+  },
+  {
+    "file": "invalid-transition-into-first-slide.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.transitions[0].to",
+        "messageContains": "first slide"
+      }
+    ]
+  },
+  {
+    "file": "invalid-duration.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.transitions[0].duration",
+        "messageContains": "out of range"
+      }
+    ]
+  },
+  {
+    "file": "invalid-easing.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.transitions[0].easing",
+        "messageContains": "Unknown easing \"bouncy\""
+      }
+    ]
+  },
+  {
+    "file": "invalid-group-cycle.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.g1.parent",
+        "messageContains": "cycle"
+      }
+    ]
+  },
+  {
+    "file": "invalid-parent-not-group.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.d.parent",
+        "messageContains": "only \"group\" actors"
+      }
+    ]
+  },
+  {
+    "file": "invalid-polygon-too-few-points.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.p.points",
+        "messageContains": "at least 3 points"
+      }
+    ]
+  },
+  {
+    "file": "invalid-declaration-only-key-in-change.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.slides[1].changes.x.type",
+        "messageContains": "cannot change between slides"
+      }
+    ]
+  },
+  {
+    "file": "invalid-duplicate-slide-id.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.slides[1].id",
+        "messageContains": "Duplicate slide id \"s1\""
+      }
+    ]
+  },
+  {
+    "file": "invalid-version.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.version",
+        "messageContains": "Unsupported format version"
+      }
+    ]
+  },
+  {
+    "file": "invalid-missing-library.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.library",
+        "messageContains": "Required property is missing"
+      }
+    ]
+  },
+  {
+    "file": "invalid-unknown-top-level-key.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.extra",
+        "messageContains": "Unknown property \"extra\""
+      }
+    ]
+  },
+  {
+    "file": "invalid-text-too-long.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.actors.t.text",
+        "messageContains": "too long"
+      }
+    ]
+  },
+  {
+    "file": "valid-symbol-schemes.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "invalid-symbol-schemes.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.a.symbol",
+        "messageContains": "not a valid symbol"
+      },
+      {
+        "path": "$.animations.b.symbol",
+        "messageContains": "not a valid symbol"
+      },
+      {
+        "path": "$.animations.c.symbol",
+        "messageContains": "not a valid symbol"
+      },
+      {
+        "path": "$.animations.d.symbol",
+        "messageContains": "not a valid symbol"
+      },
+      {
+        "path": "$.animations.e.symbol",
+        "messageContains": "not a valid symbol"
+      }
+    ]
+  },
+  {
+    "file": "invalid-duplicate-symbol-with-prefix.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.animations.b.symbol",
+        "messageContains": "already bound"
+      }
+    ]
+  },
+  {
+    "file": "../../examples/math-utils/src/main/resources/META-INF/ponder/ponder.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "../../examples/js-math-utils/ponder.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "../../examples/python/mathutils/ponder.json",
+    "valid": true,
+    "errors": []
+  }
+]

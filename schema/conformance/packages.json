@@ -1,0 +1,153 @@
+{
+  "//": [
+    "Package detection and symbol candidates that every Ponder client must produce.",
+    "Run by plugin/src/test/kotlin/dev/ponder/ConformanceTest.kt and vscode/tests/conformance.test.ts.",
+    "files: the package layout (path -> content). decl: file that declares the function. names: its enclosing names.",
+    "expect.root: package folder. expect.ponder: ponder.json path inside it, or null. expect.candidates: exact list, in order."
+  ],
+  "packages": [
+    {
+      "name": "npm package in node_modules",
+      "files": {
+        "app/package.json": "{\"name\":\"app\"}",
+        "app/ponder.json": "{}",
+        "app/node_modules/math-utils/package.json": "{ \"name\": \"math-utils\", \"version\": \"1.0.0\" }",
+        "app/node_modules/math-utils/ponder.json": "{}"
+      },
+      "decl": "app/node_modules/math-utils/lib/stack.js",
+      "names": ["IntStack", "push"],
+      "expect": {
+        "root": "app/node_modules/math-utils",
+        "ponder": "ponder.json",
+        "manifestName": "math-utils",
+        "candidates": ["sym:lib/stack.js:IntStack.push", "js:math-utils#IntStack.push", "js:math-utils/lib/stack#IntStack.push"]
+      }
+    },
+    {
+      "name": "npm package main file",
+      "files": { "m/package.json": "{\"name\": \"math-utils\" }", "m/ponder.json": "{}" },
+      "decl": "m/index.js",
+      "names": ["clamp"],
+      "expect": { "root": "m", "ponder": "ponder.json", "candidates": ["sym:index.js:clamp", "js:math-utils#clamp"] }
+    },
+    {
+      "name": "scoped npm package with TypeScript declarations",
+      "files": { "n/@acme/math/package.json": "{\"name\": \"@acme/math\" }", "n/@acme/math/ponder.json": "{}" },
+      "decl": "n/@acme/math/dist/index.d.ts",
+      "names": ["clamp"],
+      "expect": {
+        "root": "n/@acme/math",
+        "ponder": "ponder.json",
+        "candidates": ["sym:dist/index.d.ts:clamp", "js:@acme/math#clamp", "js:@acme/math/dist#clamp"]
+      }
+    },
+    {
+      "name": "another package never uses the enclosing project's ponder.json",
+      "files": { "app/ponder.json": "{}", "app/node_modules/other/package.json": "{\"name\": \"other\" }" },
+      "decl": "app/node_modules/other/index.js",
+      "names": ["f"],
+      "expect": { "root": "app/node_modules/other", "ponder": null, "manifestName": "other", "candidates": ["sym:index.js:f", "js:other#f"] }
+    },
+    {
+      "name": "Python package in site-packages",
+      "files": {
+        "venv/lib/site-packages/mathutils/__init__.py": "",
+        "venv/lib/site-packages/mathutils/ponder.json": "{}",
+        "venv/lib/site-packages/mathutils/sub/__init__.py": ""
+      },
+      "decl": "venv/lib/site-packages/mathutils/sub/stack.py",
+      "names": ["IntStack", "push"],
+      "expect": {
+        "root": "venv/lib/site-packages/mathutils",
+        "ponder": "ponder.json",
+        "candidates": ["sym:sub/stack.py:IntStack.push", "py:mathutils.sub.stack.IntStack.push"]
+      }
+    },
+    {
+      "name": "Python package __init__",
+      "files": { "sp/mathutils/__init__.py": "", "sp/mathutils/ponder.json": "{}" },
+      "decl": "sp/mathutils/__init__.py",
+      "names": ["clamp"],
+      "expect": { "root": "sp/mathutils", "ponder": "ponder.json", "candidates": ["sym:__init__.py:clamp", "py:mathutils.clamp"] }
+    },
+    {
+      "name": "Python package without ponder.json stops at its top-level package",
+      "files": { "site-packages/ponder.json": "{}", "site-packages/other/__init__.py": "" },
+      "decl": "site-packages/other/core.py",
+      "names": ["f"],
+      "expect": { "root": "site-packages/other", "ponder": null, "candidates": ["sym:core.py:f", "py:other.core.f"] }
+    },
+    {
+      "name": "Python src layout: ponder.json ships inside the package folder",
+      "files": { "proj/pyproject.toml": "[project]\nname = \"math-utils\"\n", "proj/src/mathutils/__init__.py": "", "proj/src/mathutils/ponder.json": "{}" },
+      "decl": "proj/src/mathutils/core.py",
+      "names": ["clamp"],
+      "expect": { "root": "proj/src/mathutils", "ponder": "ponder.json", "candidates": ["sym:core.py:clamp", "py:mathutils.core.clamp"] }
+    },
+    {
+      "name": "Rust crate root",
+      "files": { "reg/m-1.0/Cargo.toml": "[package]\nname = \"math-utils\"\nversion = \"1.0.0\"\n", "reg/m-1.0/ponder.json": "{}" },
+      "decl": "reg/m-1.0/src/lib.rs",
+      "names": ["clamp"],
+      "expect": { "root": "reg/m-1.0", "ponder": "ponder.json", "manifestName": "math-utils", "candidates": ["sym:src/lib.rs:clamp", "rust:math_utils::clamp"] }
+    },
+    {
+      "name": "Rust module file with an impl block",
+      "files": { "reg/m-1.0/Cargo.toml": "[package]\nname = \"math-utils\"\n", "reg/m-1.0/ponder.json": "{}" },
+      "decl": "reg/m-1.0/src/stack/mod.rs",
+      "names": ["IntStack", "push"],
+      "expect": { "root": "reg/m-1.0", "ponder": "ponder.json", "candidates": ["sym:src/stack/mod.rs:IntStack.push", "rust:math_utils::stack::IntStack::push"] }
+    },
+    {
+      "name": "Go method with a receiver",
+      "files": { "mod/m@v1/go.mod": "module example.com/m\n\ngo 1.22\n", "mod/m@v1/ponder.json": "{}" },
+      "decl": "mod/m@v1/stack/stack.go",
+      "names": ["IntStack", "Push"],
+      "expect": {
+        "root": "mod/m@v1",
+        "ponder": "ponder.json",
+        "manifestName": "example.com/m",
+        "candidates": ["sym:stack/stack.go:IntStack.Push", "go:example.com/m/stack.IntStack.Push"]
+      }
+    },
+    {
+      "name": "Go function in the module root",
+      "files": { "mod/m@v1/go.mod": "module example.com/m\n", "mod/m@v1/ponder.json": "{}" },
+      "decl": "mod/m@v1/clamp.go",
+      "names": ["Clamp"],
+      "expect": { "root": "mod/m@v1", "ponder": "ponder.json", "candidates": ["sym:clamp.go:Clamp", "go:example.com/m.Clamp"] }
+    },
+    {
+      "name": "C++ header",
+      "files": { "lib/ponder.json": "{}" },
+      "decl": "lib/include/math.hpp",
+      "names": ["math", "clamp"],
+      "expect": { "root": "lib", "ponder": "ponder.json", "candidates": ["sym:include/math.hpp:math.clamp", "cpp:math::clamp"] }
+    },
+    {
+      "name": "any other language",
+      "files": { "gem/math.gemspec": "", "gem/ponder.json": "{}" },
+      "decl": "gem/lib/stack.rb",
+      "names": ["IntStack", "push"],
+      "expect": { "root": "gem", "ponder": "ponder.json", "candidates": ["sym:lib/stack.rb:IntStack.push"] }
+    }
+  ],
+  "matching": [
+    { "name": "jvm: prefix is optional", "symbols": ["jvm:p.C#m(int)"], "candidates": ["p.C#m(int)"], "expect": "jvm:p.C#m(int)" },
+    { "name": "any alias matches", "symbols": ["py:m.f", "sym:m.py:f"], "candidates": ["sym:m.py:f"], "expect": "py:m.f" },
+    {
+      "name": "C++ without parameters finds the only overload",
+      "symbols": ["cpp:m::clamp(int,int,int)"],
+      "candidates": ["cpp:m::clamp"],
+      "expect": "cpp:m::clamp(int,int,int)"
+    },
+    {
+      "name": "C++ without parameters is ambiguous with two overloads",
+      "symbols": ["cpp:m::clamp(int)", "cpp:m::clamp(double)"],
+      "separateAnimations": true,
+      "candidates": ["cpp:m::clamp"],
+      "expect": null
+    },
+    { "name": "no partial or name-only matching", "symbols": ["py:m.clamp"], "candidates": ["py:other.clamp", "sym:x.py:clamp"], "expect": null }
+  ]
+}

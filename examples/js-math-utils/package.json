@@ -1,0 +1,7 @@
+{
+  "name": "math-utils",
+  "version": "1.0.0",
+  "description": "Demo library for Ponder (JavaScript).",
+  "main": "index.js",
+  "files": ["index.js", "lib", "ponder.json"]
+}

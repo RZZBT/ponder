@@ -1,0 +1,29 @@
+# Gradle
+.gradle/
+build/
+.kotlin/
+.intellijPlatform/
+
+# Node
+node_modules/
+engine/dist/
+
+# IDE
+/.idea/
+/*.iml
+examples/consumer/.idea/workspace.xml
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated copies of the engine and schema
+vscode/dist/
+vscode/media/
+visualstudio/media/ponder-player.*
+visualstudio/bin/
+visualstudio/obj/
+*.vsix
+examples/polyglot/rust/target/
+examples/polyglot/rust/Cargo.lock

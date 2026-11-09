@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Extern href="stdidcmd.h" />
+  <Extern href="vsshlids.h" />
+
+  <Commands package="guidPonderPackage">
+    <Groups>
+      <Group guid="guidPonderCommandSet" id="PonderContextGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_CTXT_CODEWIN" />
+      </Group>
+    </Groups>
+    <Buttons>
+      <Button guid="guidPonderCommandSet" id="cmdOpenPonder" priority="0x0100" type="Button">
+        <Parent guid="guidPonderCommandSet" id="PonderContextGroup" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings><ButtonText>Open Ponder</ButtonText></Strings>
+      </Button>
+      <Button guid="guidPonderCommandSet" id="cmdCopySymbol" priority="0x0101" type="Button">
+        <Parent guid="guidPonderCommandSet" id="PonderContextGroup" />
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings><ButtonText>Copy Ponder Symbol</ButtonText></Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <KeyBindings>
+    <KeyBinding guid="guidPonderCommandSet" id="cmdOpenPonder" editor="guidVSStd97" key1="W" mod1="Alt" />
+  </KeyBindings>
+
+  <Symbols>
+    <GuidSymbol name="guidPonderPackage" value="{3c0a8e55-6f0b-4b0e-9c41-2f1a6d7b8e10}" />
+    <GuidSymbol name="guidPonderCommandSet" value="{8f5c2d34-1e7a-4c69-b0d2-5a9e3f1c4b77}">
+      <IDSymbol name="PonderContextGroup" value="0x1020" />
+      <IDSymbol name="cmdOpenPonder" value="0x0100" />
+      <IDSymbol name="cmdCopySymbol" value="0x0101" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>

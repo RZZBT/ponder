@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ponder preview</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/engine/dist/ponder-player.css">
+  <style>
+    html, body { height: 100%; }
+    body {
+      margin: 0; display: grid; grid-template-rows: auto 1fr; overflow: auto;
+      background: #000; color: #e4e4e4;
+      font: 13px/1.5 ui-monospace, "Cascadia Mono", "DejaVu Sans Mono", "Liberation Mono", Consolas, Menlo, monospace;
+    }
+    body[data-page-theme="light"] { background: #fff; color: #1c1c1c; }
+    #bar { display: flex; gap: 16px; align-items: center; padding: 8px 12px; flex-wrap: wrap; border-bottom: 1px solid #5a5a5a; }
+    #bar select, #bar button, #bar input { font: inherit; color: inherit; background: transparent; border: 1px solid #5a5a5a; border-radius: 0; padding: 2px 6px; }
+    #bar option { color: #000; }
+    #bar label { display: inline-flex; gap: 6px; align-items: center; }
+    #wrap { padding: 12px; min-height: 0; display: flex; justify-content: center; }
+    #ponder-root { width: min(960px, 100%); height: min(640px, 100%); }
+    #log { margin-left: auto; opacity: .7; }
+  </style>
+</head>
+<body data-page-theme="dark">
+  <div id="bar">
+    <label>animation <select id="anim"></select></label>
+    <label>theme <select id="theme"><option>dark</option><option>light</option></select></label>
+    <label><input type="checkbox" id="reduced"> reduced motion</label>
+    <button id="reload">restart</button>
+    <span id="log">keys: space, left/right, r, e</span>
+  </div>
+  <div id="wrap"><div id="ponder-root"></div></div>
+  <script src="/engine/dist/ponder-player.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const DEMO = '/examples/math-utils/src/main/resources/META-INF/ponder/ponder.json';
+    const AUTHOR = '/__ponder-file'; // served when started with: npm run try -- path/to/ponder.json
+    let source = DEMO, text = null;
+
+    // Fills the animation list (keeping the current choice) and re-runs. Invalid files show the error panel.
+    function apply(newText) {
+      text = newText;
+      const keep = $('anim').value;
+      $('anim').length = 0;
+      const r = Ponder.parseDocument(text);
+      const ids = r.ok ? Object.keys(r.document.animations) : [];
+      for (const id of ids) $('anim').add(new Option(id));
+      if (ids.includes(keep)) $('anim').value = keep;
+      run();
+    }
+
+    async function load() {
+      const mine = await fetch(AUTHOR).catch(() => null);
+      if (mine && mine.ok) {
+        source = AUTHOR;
+        $('log').textContent = 'file: ' + decodeURIComponent(mine.headers.get('x-ponder-file') || '') + ' (live)';
+        apply(await mine.text());
+        // live reload: re-run whenever the file on disk changes
+        setInterval(async () => {
+          const r = await fetch(AUTHOR).catch(() => null);
+          if (!r || !r.ok) return;
+          const t = await r.text();
+          if (t !== text) apply(t);
+        }, 800);
+      } else {
+        apply(await (await fetch(DEMO)).text());
+      }
+    }
+    function run() {
+      const theme = $('theme').value;
+      document.body.dataset.pageTheme = theme;
+      Ponder.start(text, $('anim').value, {
+        theme, reducedMotion: $('reduced').checked,
+        onHostMessage: (m) => { if (source === DEMO) $('log').textContent = 'host: ' + JSON.stringify(m); },
+      });
+    }
+    $('anim').onchange = run; $('theme').onchange = run; $('reduced').onchange = run; $('reload').onclick = run;
+    load();
+
+    // ?probe=<ms>: after <ms>, dump the player state into <pre id=probe> (used for automated checks)
+    const probe = new URLSearchParams(location.search).get('probe');
+    if (probe) setTimeout(() => {
+      const pre = document.createElement('pre'); pre.id = 'probe';
+      pre.textContent = JSON.stringify(Ponder.current()?.player?.getSnapshot() ?? null);
+      document.body.appendChild(pre);
+    }, Number(probe));
+  </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+{
+  "version": 1,
+  "library": {
+    "name": "math-utils"
+  },
+  "animations": {
+    "jvm": {
+      "symbol": "jvm:p.C#m(int)",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "py": {
+      "symbol": "py:mathutils.core.clamp",
+      "aliases": [
+        "py:mathutils.clamp"
+      ],
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "js": {
+      "symbol": "js:math-utils#clamp",
+      "aliases": [
+        "js:@acme/math/stack#IntStack.push",
+        "js:math-utils#default"
+      ],
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "dotnet": {
+      "symbol": "dotnet:M:MathUtils.Clamp(System.Int32,System.Int32,System.Int32)",
+      "aliases": [
+        "dotnet:M:Acme.IntStack.#ctor(System.Int32)",
+        "dotnet:M:Acme.List`1.Add(`0)"
+      ],
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "go": {
+      "symbol": "go:example.com/mathutils.Clamp",
+      "aliases": [
+        "go:example.com/mathutils/stack.IntStack.Push"
+      ],
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "rust": {
+      "symbol": "rust:math_utils::clamp",
+      "aliases": [
+        "rust:math_utils::stack::IntStack::push"
+      ],
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "cpp": {
+      "symbol": "cpp:math::clamp(int,int,int)",
+      "aliases": [
+        "cpp:math::IntStack::push(int)",
+        "cpp:math::IntStack::~IntStack()"
+      ],
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "sym": {
+      "symbol": "sym:lib/stack.rb:IntStack.push",
+      "aliases": [
+        "sym:src/clamp.php:clamp"
+      ],
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    }
+  }
+}

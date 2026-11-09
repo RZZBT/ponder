@@ -1,0 +1,8 @@
+<idea-plugin>
+  <extensions defaultExtensionNs="dev.ponder">
+    <resolver implementation="dev.ponder.resolution.JvmPonderResolver" order="first"/>
+  </extensions>
+  <extensions defaultExtensionNs="com.intellij">
+    <codeInsight.lineMarkerProvider language="JAVA" implementationClass="dev.ponder.ui.PonderLineMarkerProvider"/>
+  </extensions>
+</idea-plugin>

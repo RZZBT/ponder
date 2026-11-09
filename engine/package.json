@@ -1,0 +1,26 @@
+{
+  "name": "@ponder/engine",
+  "version": "0.1.0",
+  "description": "Ponder animation engine: parses ponder.json, compiles slides to scenes and plays them as SVG. IDE-independent.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "node build.mjs",
+    "test": "vitest run",
+    "preview": "node scripts/preview-server.mjs",
+    "try": "node scripts/try.mjs",
+    "check": "node build.mjs && node dist/ponder.cjs check"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "esbuild": "^0.25.0",
+    "jsdom": "^26.0.0",
+    "typescript": "^5.8.0",
+    "vitest": "^3.2.0",
+    "@types/node": "^22.0.0"
+  },
+  "bin": {
+    "ponder": "dist/ponder.cjs"
+  }
+}

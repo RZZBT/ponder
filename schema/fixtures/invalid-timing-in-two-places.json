@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "library": { "group": "g", "name": "n" },
+  "animations": {
+    "a": {
+      "symbol": "p.C#m(int)",
+      "title": "t",
+      "actors": { "x": { "type": "circle", "radius": 10 } },
+      "slides": [ { "caption": "one" }, { "id": "s2", "caption": "two", "duration": 300 } ],
+      "transitions": [ { "to": "s2", "duration": 900 } ]
+    }
+  }
+}

@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: engine/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Check the demo animations resolve in their packages
+        run: >-
+          node dist/ponder.cjs check ../examples/js-math-utils ../examples/python/mathutils ../examples/consumer/libs/math-utils-1.0.0.jar
+          ../examples/polyglot/typescript/ts-math ../examples/polyglot/python/pyutils ../examples/polyglot/rust/rmath
+          ../examples/polyglot/cpp/cmath-lib ../examples/polyglot/php/phpmath ../examples/polyglot/lua/lmath
+          ../examples/polyglot/go/gomath ../examples/polyglot/ruby/rbmath
+
+  vscode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: engine
+      - run: npm install --no-audit --no-fund
+        working-directory: vscode
+      - run: npm run typecheck && npm test
+        working-directory: vscode
+      - run: xvfb-run -a npm run test:integration
+        working-directory: vscode
+
+  plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :plugin:test :plugin:buildPlugin
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin
+          path: plugin/build/distributions/*.zip
+
+  visualstudio:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci && npm run build
+        working-directory: engine
+      - uses: microsoft/setup-msbuild@v2
+      - run: msbuild visualstudio/Ponder.VisualStudio.csproj /restore /p:Configuration=Release /v:minimal

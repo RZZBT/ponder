@@ -1,0 +1,81 @@
+name: Release
+
+# Push a tag like v0.2.0. The release gets:
+#   ponder-jetbrains-<v>.zip   JetBrains IDEs (Settings | Plugins | Install Plugin from Disk)
+#   updatePlugins.xml          custom plugin repository for JetBrains IDEs (automatic updates)
+#   ponder-vscode-<v>.vsix     VS Code (code --install-extension)
+#   ponder-visualstudio-<v>.vsix  Visual Studio 2022
+#   ponder.cjs                 checker for authors (node ponder.cjs check path/to/ponder.json)
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  jetbrains:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 25 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :plugin:test :plugin:buildPlugin
+      - name: Name the zip and write updatePlugins.xml
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          cp plugin/build/distributions/plugin-*.zip "ponder-jetbrains-$v.zip"
+          url="https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/ponder-jetbrains-$v.zip"
+          cat > updatePlugins.xml <<EOF
+          <plugins>
+            <plugin id="dev.ponder" url="$url" version="$v">
+              <idea-version since-build="262"/>
+              <name>Ponder</name>
+            </plugin>
+          </plugins>
+          EOF
+      - uses: actions/upload-artifact@v4
+        with: { name: jetbrains, path: "ponder-jetbrains-*.zip\nupdatePlugins.xml" }
+
+  vscode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci && npm test && npm run build
+        working-directory: engine
+      - run: npm install --no-audit --no-fund && npm test && npm run package
+        working-directory: vscode
+      - run: cp vscode/ponder.vsix "ponder-vscode-${GITHUB_REF_NAME#v}.vsix" && cp engine/dist/ponder.cjs .
+      - uses: actions/upload-artifact@v4
+        with: { name: vscode, path: "ponder-vscode-*.vsix\nponder.cjs" }
+
+  visualstudio:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm ci && npm run build
+        working-directory: engine
+      - uses: microsoft/setup-msbuild@v2
+      - run: msbuild visualstudio/Ponder.VisualStudio.csproj /restore /p:Configuration=Release /v:minimal
+      - shell: bash
+        run: cp visualstudio/bin/Release/*.vsix "ponder-visualstudio-${GITHUB_REF_NAME#v}.vsix"
+      - uses: actions/upload-artifact@v4
+        with: { name: visualstudio, path: "ponder-visualstudio-*.vsix" }
+
+  release:
+    needs: [jetbrains, vscode, visualstudio]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { merge-multiple: true, path: out }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*
+          generate_release_notes: true

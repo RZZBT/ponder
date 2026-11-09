@@ -1,0 +1,9 @@
+src/**
+tests/**
+test-integration/**
+node_modules/**
+.vscode/**
+build.mjs
+tsconfig.json
+**/*.map
+*.vsix

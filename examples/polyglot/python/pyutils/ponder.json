@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "library": {
+    "name": "pyutils"
+  },
+  "animations": {
+    "clamp": {
+      "symbol": "py:pyutils.clamp",
+      "title": "clamp",
+      "autoAdvance": true,
+      "actors": {
+        "label": {
+          "type": "text",
+          "x": 500,
+          "y": 150,
+          "text": "clamp",
+          "fontSize": 30
+        },
+        "dot": {
+          "type": "circle",
+          "x": 250,
+          "y": 330,
+          "radius": 24,
+          "fill": "accent"
+        }
+      },
+      "slides": [
+        {
+          "caption": "clamp: start."
+        },
+        {
+          "caption": "The value moves.",
+          "changes": {
+            "dot": {
+              "x": 750,
+              "fill": "success"
+            }
+          }
+        }
+      ]
+    },
+    "push": {
+      "symbol": "py:pyutils.stack.IntStack.push",
+      "title": "IntStack.push",
+      "autoAdvance": true,
+      "actors": {
+        "label": {
+          "type": "text",
+          "x": 500,
+          "y": 150,
+          "text": "IntStack.push",
+          "fontSize": 30
+        },
+        "dot": {
+          "type": "circle",
+          "x": 250,
+          "y": 330,
+          "radius": 24,
+          "fill": "accent"
+        }
+      },
+      "slides": [
+        {
+          "caption": "IntStack.push: start."
+        },
+        {
+          "caption": "The value moves.",
+          "changes": {
+            "dot": {
+              "x": 750,
+              "fill": "success"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

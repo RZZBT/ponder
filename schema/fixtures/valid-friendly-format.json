@@ -1,0 +1,34 @@
+{
+  "//": "Uses every authoring shortcut: comments, autoAdvance, slides without ids, timing written on slides.",
+  "version": 1,
+  "library": { "//": "coordinates", "group": "g", "name": "n" },
+  "animations": {
+    "a": {
+      "//": "an animation comment",
+      "symbol": "p.C#m(int)",
+      "title": "t",
+      "autoAdvance": true,
+      "actors": {
+        "//": ["A comment can be a list of lines,", "and it is allowed inside \"actors\" too."],
+        "x": { "//": "the moving dot", "type": "circle", "radius": 10 },
+        "y": { "type": "text", "text": "hi" }
+      },
+      "slides": [
+        { "//": "start", "caption": "one" },
+        { "caption": "two", "duration": 400, "changes": { "//": "move it", "x": { "//": "right", "x": 5 } } },
+        { "caption": "three: waits for the user", "trigger": "next", "style": "direct", "changes": { "y": { "text": "bye" } } },
+        { "id": "last", "caption": "four" }
+      ],
+      "transitions": [
+        { "//": "the old style still works next to the new one", "to": "last", "easing": "ease-out" }
+      ]
+    },
+    "b": {
+      "symbol": "p.C#m(long)",
+      "title": "auto with a custom pause",
+      "autoAdvance": 2500,
+      "actors": { "x": { "type": "rectangle", "width": 10, "height": 10 } },
+      "slides": [ { "caption": "a" }, { "caption": "b", "changes": { "x": { "x": 50 } } } ]
+    }
+  }
+}

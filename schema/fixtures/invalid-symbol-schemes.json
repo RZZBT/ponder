@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "library": {
+    "name": "n"
+  },
+  "animations": {
+    "a": {
+      "symbol": "py:1bad",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "b": {
+      "symbol": "sym:../outside.rb:x",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "c": {
+      "symbol": "js:pkg",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "d": {
+      "symbol": "rust:single",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    },
+    "e": {
+      "symbol": "cobol:x",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "caption": "a"
+        },
+        {
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ]
+    }
+  }
+}

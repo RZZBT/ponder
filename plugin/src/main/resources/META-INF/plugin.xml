@@ -1,0 +1,45 @@
+<idea-plugin>
+  <id>dev.ponder</id>
+  <name>Ponder</name>
+  <vendor>Ponder</vendor>
+
+  <!-- description, version and since-build are injected by the Gradle build (see plugin/build.gradle.kts) -->
+
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lang</depends>
+  <!-- Java/Kotlin: JVM signatures and the gutter icon. Every other language uses the generic resolver below. -->
+  <depends optional="true" config-file="ponder-java.xml">com.intellij.modules.java</depends>
+  <depends optional="true" config-file="ponder-kotlin.xml">org.jetbrains.kotlin</depends>
+  <!-- Embedded browser: optional, so a runtime without JCEF still gets the text fallback -->
+  <depends optional="true" config-file="ponder-jcef.xml">com.intellij.modules.jcef</depends>
+
+  <extensionPoints>
+    <extensionPoint qualifiedName="dev.ponder.resolver" interface="dev.ponder.resolution.PonderResolver" dynamic="true"/>
+  </extensionPoints>
+
+  <extensions defaultExtensionNs="dev.ponder">
+    <resolver implementation="dev.ponder.resolution.GenericPonderResolver" order="last"/>
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <applicationConfigurable parentId="tools" instance="dev.ponder.settings.PonderConfigurable"
+                             id="dev.ponder.settings" displayName="Ponder"/>
+  </extensions>
+
+  <actions>
+    <action id="dev.ponder.OpenPonder" class="dev.ponder.ui.OpenPonderAction" text="Open Ponder"
+            description="Show the animation for the library function under the mouse pointer or caret"
+            icon="/icons/ponder.svg">
+      <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="GotoDeclaration"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
+    </action>
+    <action id="dev.ponder.CopySymbol" class="dev.ponder.ui.CopyPonderSymbolAction" text="Copy Ponder Symbol"
+            description="Copy the ponder.json symbol of the function or method under the caret">
+      <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="dev.ponder.OpenPonder"/>
+    </action>
+    <action id="dev.ponder.ShowDiagnostics" class="dev.ponder.ui.ShowPonderDiagnosticsAction" text="Ponder: Show Diagnostics"
+            description="Problems found while reading Ponder metadata of libraries">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
+</idea-plugin>

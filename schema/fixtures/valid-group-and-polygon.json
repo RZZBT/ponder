@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "library": {
+    "group": "g",
+    "name": "n"
+  },
+  "animations": {
+    "a": {
+      "symbol": "p.C#m(int)",
+      "title": "t",
+      "actors": {
+        "g": {
+          "type": "group",
+          "x": 10
+        },
+        "p": {
+          "type": "polygon",
+          "parent": "g",
+          "points": [
+            [
+              0,
+              0
+            ],
+            [
+              10,
+              0
+            ],
+            [
+              0,
+              10
+            ]
+          ]
+        },
+        "t": {
+          "type": "text",
+          "text": "hi",
+          "fontSize": 20,
+          "anchor": "start"
+        },
+        "ar": {
+          "type": "arrow",
+          "width": 50,
+          "height": 0
+        }
+      },
+      "slides": [
+        {
+          "id": "s1"
+        },
+        {
+          "id": "s2",
+          "changes": {
+            "p": {
+              "points": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  20,
+                  0
+                ],
+                [
+                  0,
+                  20
+                ],
+                [
+                  5,
+                  5
+                ]
+              ]
+            },
+            "t": {
+              "text": "bye"
+            }
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "to": "s2",
+          "easing": [
+            0.25,
+            0.1,
+            0.25,
+            1
+          ],
+          "stagger": 50,
+          "order": [
+            "p",
+            "t"
+          ]
+        }
+      ]
+    }
+  }
+}
