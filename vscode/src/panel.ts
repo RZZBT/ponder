@@ -3,10 +3,11 @@ import * as vscode from 'vscode';
 import { randomBytes } from 'node:crypto';
 
 let panel: vscode.WebviewPanel | null = null;
-let pending: { text: string; id: string } | null = null;
+let pending: { text: string; id: string; source: string } | null = null;
 
-export function showAnimation(context: vscode.ExtensionContext, title: string, documentText: string, animationId: string, log: vscode.OutputChannel): void {
-  pending = { text: documentText, id: animationId };
+/** [source] is shown under the title: where the animation comes from (library, local file, community index). */
+export function showAnimation(context: vscode.ExtensionContext, title: string, documentText: string, animationId: string, log: vscode.OutputChannel, source = ''): void {
+  pending = { text: documentText, id: animationId, source: source.slice(0, 80) };
   if (panel) {
     panel.title = `Ponder: ${title}`;
     panel.reveal(vscode.ViewColumn.Beside, false);
@@ -39,6 +40,7 @@ function send(): void {
   void panel.webview.postMessage({
     type: 'start',
     text: pending.text,
+    source: pending.source,
     id: pending.id,
     theme: dark ? 'dark' : 'light',
     autoplay: config.get<boolean>('autoplay', true),
@@ -99,6 +101,7 @@ function html(webview: vscode.Webview, media: vscode.Uri): string {
       autoplay: m.autoplay !== false,
       reducedMotion: typeof m.reducedMotion === 'boolean' ? m.reducedMotion : undefined,
       hostControls: false,
+      sourceLabel: typeof m.source === 'string' ? m.source : undefined,
       colors: {
         background: hex('--vscode-editor-background'),
         foreground: hex('--vscode-editor-foreground'),

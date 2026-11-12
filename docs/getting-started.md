@@ -30,7 +30,7 @@ The first start takes a few minutes. A second IntelliJ window opens with Ponder 
 ```
 
 Then **Settings | Plugins | gear icon | Install Plugin from Disk...** and pick
-`plugin/build/distributions/plugin-0.1.0.zip`. Open `examples/consumer` and choose any JDK 17+ if asked.
+`plugin/build/distributions/plugin-0.2.0.zip`. Open `examples/consumer` and choose any JDK 17+ if asked.
 
 ## The demo calls
 

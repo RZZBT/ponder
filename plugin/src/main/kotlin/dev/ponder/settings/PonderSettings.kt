@@ -19,10 +19,27 @@ class PonderSettings : SimplePersistentStateComponent<PonderSettings.State>(Stat
         var compactHeight by property(470)
         var expandedWidth by property(980)
         var expandedHeight by property(730)
+
+        /** [ONLINE_ASK] (first use asks), [ONLINE_ON] or [ONLINE_OFF]. */
+        var onlineLookup by string(ONLINE_ASK)
+        /** Base address of the community index (https). */
+        var indexUrl by string(DEFAULT_INDEX_URL)
+        /** Extra folders with ponder.json files, one per line. `<project>/.ponder` is always used. */
+        var localFolders by string("")
     }
+
+    /** Asked once per IDE session at most, even when the user picks "Not now". */
+    @Volatile var askedThisSession = false
 
     companion object {
         const val MIN_SIZE = 360
         const val MAX_SIZE = 3000
+
+        const val ONLINE_ASK = "ask"
+        const val ONLINE_ON = "on"
+        const val ONLINE_OFF = "off"
+
+        /** Where the community index will be published (GitHub Pages). Changeable in Settings | Tools | Ponder. */
+        const val DEFAULT_INDEX_URL = "https://rzzbt.github.io/ponder-index/"
     }
 }

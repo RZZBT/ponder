@@ -10,7 +10,7 @@ async function run() {
   const spec = JSON.parse(process.env.PONDER_CASE);
   const out = { language: spec.language, results: [], extensions: [] };
   try {
-    await vscode.extensions.getExtension('ponder.ponder').activate();
+    await vscode.extensions.getExtension('RZZBT.ponder').activate();
     const folder = vscode.workspace.workspaceFolders[0].uri.fsPath;
     const doc = await vscode.workspace.openTextDocument(path.join(folder, spec.file));
     await vscode.window.showTextDocument(doc);

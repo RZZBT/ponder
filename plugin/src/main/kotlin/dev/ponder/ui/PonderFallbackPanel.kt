@@ -34,7 +34,8 @@ class PonderFallbackPanel(
 
         val header = JPanel(BorderLayout()).apply {
             add(JBLabel(match.animation.title).apply { font = font.deriveFont(Font.BOLD, font.size2D + 2f) }, BorderLayout.NORTH)
-            if (match.animation.description.isNotBlank()) add(JBLabel(match.animation.description).apply { foreground = UIUtil.getContextHelpForeground() }, BorderLayout.CENTER)
+            val sub = listOf(match.animation.description, match.sourceLabel).filter { it.isNotBlank() }.joinToString("  ·  ")
+            if (sub.isNotBlank()) add(JBLabel(sub).apply { foreground = UIUtil.getContextHelpForeground() }, BorderLayout.CENTER)
             add(JBLabel("<html><i>The interactive animation needs JCEF, which this IDE runtime does not provide. " +
                 "Showing the steps as text. Press Esc to close.</i></html>").apply { border = JBUI.Borders.empty(8, 0) }, BorderLayout.SOUTH)
             border = JBUI.Borders.emptyBottom(6)

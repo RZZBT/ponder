@@ -3,8 +3,8 @@ import { build } from 'esbuild';
 import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
 import { execSync } from 'node:child_process';
 
-const engineDist = '../engine/dist/ponder-player.js';
-if (!existsSync(engineDist)) execSync('npm run build', { cwd: '../engine', stdio: 'inherit' });
+// Always rebuild the engine: a stale engine/dist would ship an old renderer inside the extension.
+execSync('npm run build', { cwd: '../engine', stdio: 'inherit' });
 
 mkdirSync('media', { recursive: true });
 copyFileSync('../engine/dist/ponder-player.js', 'media/ponder-player.js');

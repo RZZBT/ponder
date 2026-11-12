@@ -1,11 +1,35 @@
 {
   "name": "ponder",
   "displayName": "Ponder",
-  "description": "Animated explanations of library functions, written by the library's authors in ponder.json.",
-  "version": "0.1.0",
-  "publisher": "ponder",
+  "description": "Press Alt+W on a library call to see a short, step-by-step animation of what the function does.",
+  "version": "0.2.0",
+  "publisher": "RZZBT",
   "license": "MIT",
-  "private": true,
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RZZBT/ponder"
+  },
+  "homepage": "https://github.com/RZZBT/ponder#readme",
+  "bugs": {
+    "url": "https://github.com/RZZBT/ponder/issues"
+  },
+  "galleryBanner": {
+    "color": "#121212",
+    "theme": "dark"
+  },
+  "keywords": [
+    "animation",
+    "documentation",
+    "learn",
+    "beginner",
+    "visualize",
+    "numpy",
+    "lodash",
+    "python",
+    "javascript",
+    "java"
+  ],
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -14,6 +38,15 @@
     "Education"
   ],
   "main": "./dist/extension.js",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In Restricted Mode most language extensions are off, so Ponder can only explain why it cannot find animations. The folder's own Ponder settings are ignored.",
+      "restrictedConfigurations": [
+        "ponder.localFolders"
+      ]
+    }
+  },
   "activationEvents": [],
   "contributes": {
     "commands": [
@@ -25,6 +58,11 @@
       {
         "command": "ponder.copySymbol",
         "title": "Copy Ponder Symbol",
+        "category": "Ponder"
+      },
+      {
+        "command": "ponder.clearCache",
+        "title": "Clear Cached Animations",
         "category": "Ponder"
       }
     ],
@@ -78,6 +116,38 @@
             "Always animate"
           ],
           "description": "Reduce motion: steps switch instantly and nothing advances by itself."
+        },
+        "ponder.onlineLookup": {
+          "type": "string",
+          "enum": [
+            "ask",
+            "on",
+            "off"
+          ],
+          "default": "ask",
+          "enumDescriptions": [
+            "Ask the first time a library has no animation of its own",
+            "Look in the community index when a library has no animation",
+            "Never go online"
+          ],
+          "markdownDescription": "For libraries that ship no `ponder.json`, look for an animation in the community index. Only the package name is sent (for example `pypi/numpy`), never your code. Results are cached for a day and work offline afterwards.",
+          "scope": "application"
+        },
+        "ponder.indexUrl": {
+          "type": "string",
+          "default": "https://rzzbt.github.io/ponder-index/",
+          "pattern": "^(https://|http://(localhost|127\\.0\\.0\\.1|\\[::1\\])[:/])",
+          "patternErrorMessage": "Use an https:// address (http:// only for localhost, to test an index on this machine).",
+          "description": "Address of the community index.",
+          "scope": "application"
+        },
+        "ponder.localFolders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Extra folders with `ponder.json` files you made or downloaded. The `.ponder` folder of each workspace folder is always used."
         }
       }
     }
@@ -87,7 +157,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:integration": "node build.mjs && node test-integration/run.mjs",
-    "package": "node build.mjs && npx --yes @vscode/vsce@3.2.1 package --no-dependencies --allow-missing-repository -o ponder.vsix",
+    "package": "node build.mjs && npx --yes @vscode/vsce@3.2.1 package --no-dependencies -o ponder.vsix",
     "test:languages": "node build.mjs && node test-integration/polyglot.mjs"
   },
   "devDependencies": {

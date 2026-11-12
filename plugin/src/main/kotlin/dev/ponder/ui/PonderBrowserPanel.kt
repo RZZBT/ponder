@@ -95,6 +95,7 @@ class PonderBrowserPanel(
                 "accent" to hex(JBUI.CurrentTheme.Link.Foreground.ENABLED),
                 "border" to hex(JBColor.border()),
             ),
+            sourceLabel = match.sourceLabel,
         )
         val script = "window.__ponderPost = function(m){ ${query.inject("m")} };\n" +
             PonderHtml.startScript(match.document.text, match.animation.id, options)

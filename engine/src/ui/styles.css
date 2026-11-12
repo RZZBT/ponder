@@ -36,6 +36,7 @@ html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: 
 .ponder-title::before { content: "ponder: "; color: var(--muted); font-weight: 400; }
 .ponder-desc { margin: 0; color: var(--muted); }
 .ponder[data-mode="compact"] .ponder-desc { display: none; }
+.ponder-source { margin: 2px 0 0; color: var(--muted); font-size: 11px; letter-spacing: .2px; }
 .ponder-actions { display: flex; gap: 6px; }
 
 .ponder-stage {

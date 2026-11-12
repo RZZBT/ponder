@@ -175,6 +175,9 @@ export async function startLanguageSupport(languageId: string, log?: (s: string)
   return active;
 }
 
+export const RESTRICTED_MODE_REASON =
+  'this folder is open in Restricted Mode, so VS Code\'s language support cannot find where functions are defined. Trust the folder to use Ponder here';
+
 /**
  * The animation for the reference at [pos]. When the language server reports several definitions (TypeScript
  * does for `const { f } = require(...)`: the export entry and the function), each is checked; the result is
@@ -196,6 +199,10 @@ export async function resolveAt(uri: vscode.Uri, pos: vscode.Position, log?: (s:
   }
   log?.(`definitions: ${defs.length === 0 ? 'none' : defs.map(describeDef).join(', ')}`);
   if (defs.length === 0) {
+    if (!vscode.workspace.isTrusted) {
+      // Restricted Mode switches off most language extensions (JavaScript/TypeScript among them).
+      return { found: false, reason: RESTRICTED_MODE_REASON };
+    }
     const word = (await vscode.workspace.openTextDocument(uri)).getWordRangeAtPosition(pos);
     return { found: false, reason: word ? 'the language extension found no definition for this name' : 'put the cursor on a function or method name' };
   }

@@ -27,3 +27,6 @@ visualstudio/obj/
 *.vsix
 examples/polyglot/rust/target/
 examples/polyglot/rust/Cargo.lock
+
+# Local release builds (see dist/README.txt)
+/dist/

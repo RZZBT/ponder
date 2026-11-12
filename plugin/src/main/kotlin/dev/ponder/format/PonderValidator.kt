@@ -17,7 +17,8 @@ import kotlin.math.min
  */
 object PonderValidator {
 
-    fun validate(text: String): ValidationReport {
+    fun validate(raw: String): ValidationReport {
+        val text = raw.removePrefix("﻿") // Windows editors save UTF-8 with a byte order mark
         val bytes = text.toByteArray(Charsets.UTF_8).size
         if (bytes > PonderLimits.MAX_FILE_BYTES) {
             return failed("$", "File is too large ($bytes bytes, maximum ${PonderLimits.MAX_FILE_BYTES}).")

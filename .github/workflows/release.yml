@@ -14,7 +14,22 @@ permissions:
   contents: write
 
 jobs:
+  versions:
+    # A release whose files disagree on their version would confuse users and the JetBrains updater.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag, gradle.properties and both package.json files must name the same version
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          g=$(sed -n 's/^pluginVersion=//p' gradle.properties)
+          n=$(node -p "require('./vscode/package.json').version")
+          e=$(node -p "require('./engine/package.json').version")
+          echo "tag=$v gradle=$g vscode=$n engine=$e"
+          [ "$v" = "$g" ] && [ "$v" = "$n" ] && [ "$v" = "$e" ]
+
   jetbrains:
+    needs: versions
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,6 +56,7 @@ jobs:
         with: { name: jetbrains, path: "ponder-jetbrains-*.zip\nupdatePlugins.xml" }
 
   vscode:
+    needs: versions
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +64,7 @@ jobs:
         with: { node-version: 22 }
       - run: npm ci && npm test && npm run build
         working-directory: engine
+      - run: node engine/dist/ponder.cjs check-index examples/online-index
       - run: npm install --no-audit --no-fund && npm test && npm run package
         working-directory: vscode
       - run: cp vscode/ponder.vsix "ponder-vscode-${GITHUB_REF_NAME#v}.vsix" && cp engine/dist/ponder.cjs .
@@ -55,6 +72,9 @@ jobs:
         with: { name: vscode, path: "ponder-vscode-*.vsix\nponder.cjs" }
 
   visualstudio:
+    # Never built or tested yet; a failure here must not block the JetBrains and VS Code release.
+    needs: versions
+    continue-on-error: true
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,6 +91,7 @@ jobs:
 
   release:
     needs: [jetbrains, vscode, visualstudio]
+    if: ${{ !cancelled() && needs.jetbrains.result == 'success' && needs.vscode.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
@@ -78,4 +99,5 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: out/*
+          draft: true # nothing goes public until you review the files and press Publish
           generate_release_notes: true

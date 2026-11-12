@@ -10,6 +10,11 @@
     "errors": []
   },
   {
+    "file": "valid-with-bom.json",
+    "valid": true,
+    "errors": []
+  },
+  {
     "file": "valid-friendly-format.json",
     "valid": true,
     "errors": []

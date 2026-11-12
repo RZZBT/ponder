@@ -29,6 +29,11 @@ export interface MountOptions {
   onHostMessage?: (msg: HostMessage) => void;
   /** Show the expand/compact and close buttons (used when hosted in a popup). Default true. */
   hostControls?: boolean;
+  /**
+   * Where the animation comes from, shown under the title (e.g. "from the library", "community index").
+   * Plain text, at most 80 characters; anything else is ignored.
+   */
+  sourceLabel?: string;
 }
 
 export interface PonderHandle {
@@ -134,6 +139,8 @@ export function mount(
   const titles = el(doc, 'div', 'ponder-titles');
   titles.appendChild(el(doc, 'h1', 'ponder-title', compiled.title));
   if (compiled.description) titles.appendChild(el(doc, 'p', 'ponder-desc', compiled.description));
+  const label = typeof options.sourceLabel === 'string' ? options.sourceLabel.replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, 80) : '';
+  if (label) titles.appendChild(el(doc, 'p', 'ponder-source', label));
   header.appendChild(titles);
   const actions = el(doc, 'div', 'ponder-actions');
   const expandBtn = button(doc, 'Expand (E)', 'expand');

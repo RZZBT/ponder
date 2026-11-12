@@ -80,14 +80,15 @@ function readCentralDirectory(fd: number): Map<string, ZipEntry> {
 }
 
 /** Maven coordinates from every `META-INF/maven/<g>/<a>/pom.properties` in the jar. */
-export function pomCoordinates(jar: Jar): { group: string; name: string }[] {
-  const out: { group: string; name: string }[] = [];
+export function pomCoordinates(jar: Jar): { group: string; name: string; version?: string }[] {
+  const out: { group: string; name: string; version?: string }[] = [];
   for (const name of jar.entries.keys()) {
     if (!/^META-INF\/maven\/[^/]+\/[^/]+\/pom\.properties$/.test(name)) continue;
     const text = jar.readText(name) ?? '';
     const g = /^groupId\s*=\s*(.+)$/m.exec(text)?.[1]?.trim();
     const a = /^artifactId\s*=\s*(.+)$/m.exec(text)?.[1]?.trim();
-    if (g && a) out.push({ group: g, name: a });
+    const v = /^version\s*=\s*(.+)$/m.exec(text)?.[1]?.trim();
+    if (g && a) out.push(v ? { group: g, name: a, version: v } : { group: g, name: a });
     if (out.length >= 16) break;
   }
   return out;

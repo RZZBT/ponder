@@ -1,6 +1,6 @@
 {
   "name": "@ponder/engine",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Ponder animation engine: parses ponder.json, compiles slides to scenes and plays them as SVG. IDE-independent.",
   "private": true,
   "type": "module",

@@ -1,36 +1,68 @@
-# Ponder for VS Code
+# Ponder
 
-Press <kbd>Alt</kbd>+<kbd>W</kbd> on a library call to see the animation its authors wrote in `ponder.json`.
+**See what a library function does, one step at a time, right next to your code.**
 
-Works with any language whose extension provides Go to Definition and a document outline. Java classes inside
-jars are supported through the Java extension (`jdt://` sources).
+Put your cursor on a call such as `np.clip(...)` or `chunk(...)` and press <kbd>Alt</kbd>+<kbd>W</kbd>. Ponder opens a
+short animation that walks through what the function does with example values: shapes move, captions explain each
+step, and you go at your own pace.
 
-## Commands
+No setup. No accounts. Nothing to configure.
 
-| Command | Default key |
+## Where the animations come from
+
+1. **The library itself.** Library authors can ship a `ponder.json` with their package. These animations come from
+   the people who wrote the code, and Ponder always prefers them.
+2. **Your own folders.** Put `ponder.json` files in a `.ponder` folder in your project, for example animations you
+   made or downloaded.
+3. **The community index.** For popular libraries that ship no animation yet (NumPy, lodash, date-fns,
+   more-itertools and more), Ponder can fetch one from the free [Ponder Index](https://github.com/RZZBT/ponder-index).
+   Every example in it is checked against the real library.
+
+## Your privacy
+
+- Ponder asks **once** before it ever goes online: *Allow*, *Not now* or *Never*.
+- Only the package name is requested, for example `pypi/numpy`. **Never your code**, your file names or your
+  function names.
+- Your own code is never looked up anywhere.
+- Downloaded animations are kept on your computer, so they also work offline.
+
+## Controls
+
+| Key | Action |
 |---|---|
-| Ponder: Open Ponder | <kbd>Alt</kbd>+<kbd>W</kbd> |
-| Ponder: Copy Ponder Symbol | (editor context menu) |
+| <kbd>Alt</kbd>+<kbd>W</kbd> | open Ponder for the call at the cursor |
+| <kbd>→</kbd> / <kbd>←</kbd> | next / previous step |
+| <kbd>Space</kbd> | play / pause |
+| <kbd>A</kbd> | play all steps automatically |
+| <kbd>R</kbd> | replay |
+| <kbd>Esc</kbd> | close |
 
-`ponder.json` files get schema validation and completion.
+Ponder follows your light or dark theme and your system's reduced-motion setting.
 
-## How a call is matched
+## Languages
 
-1. VS Code's definition provider gives the declaration. Several unrelated definitions: nothing is shown.
-2. From the declaration's file, the extension walks up to the package root (first folder with `ponder.json` or a
-   package manifest). For `jdt://` classes it reads `META-INF/ponder/ponder.json` from the jar.
-3. The outline gives the enclosing names (`IntStack`, `push`); with the file path they form the candidate symbols
-   (`js:math-utils#IntStack.push`, `sym:lib/stack.js:IntStack.push`, ...).
-4. The first animation whose `symbol` or `aliases` equals a candidate is shown, if `library.name` matches the
-   package manifest.
+Works in any language whose VS Code extension supports *Go to Definition*: Python, JavaScript and TypeScript out of
+the box, Java with the Java extension, and Rust, Go, C/C++, PHP, Ruby and more with their usual extensions.
 
-## Development
+## Something not working?
 
-```sh
-npm install
-npm run build             # dist/extension.js, media/ (engine and schema copies)
-npm test                  # unit tests
-npm run test:integration  # runs the extension in VS Code against ../examples/js-consumer
-```
+- **"Restricted Mode"**: VS Code turns language support off in folders you have not trusted. Click
+  *Trust Folder…* when Ponder asks.
+- **No animation for a function**: nobody has written one yet. Library authors can add one in an afternoon, see
+  below.
+- Details of every lookup: *View → Output → Ponder*.
 
-Package detection lives in `../engine/src/packages/layout.ts` (same algorithm as the Kotlin `PackageLayout.kt`).
+## Settings
+
+All optional: `ponder.onlineLookup` (ask / on / off), `ponder.localFolders`, `ponder.autoplay`,
+`ponder.reducedMotion`. Command palette: *Ponder: Clear Cached Animations*.
+
+## For library authors
+
+Add an animation for your own functions: a `ponder.json` next to your `package.json` (or `pyproject.toml`,
+`Cargo.toml`, ...). Right-click one of your functions and choose **Copy Ponder Symbol** to get its exact name, then
+see the [guide](https://github.com/RZZBT/ponder/blob/main/docs/create-an-animation.md).
+
+## License
+
+MIT

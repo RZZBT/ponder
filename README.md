@@ -85,6 +85,20 @@ under **Settings → Keymap** (action *Open Ponder*). Plain typing is never inte
 is a normal, rebindable action. Ponder follows the IDE's light or dark theme and the operating system's
 reduced-motion setting (steps then switch instantly and nothing advances by itself).
 
+### Libraries that ship no animation
+
+Ponder looks in three places, in this order:
+
+1. the library's own `ponder.json`;
+2. your local folders: `.ponder/` in the project, plus any folders you add in the settings;
+3. the **community index** online, but only after you agree. The first time a library has no animation, Ponder
+   asks: **Allow**, **Not now** or **Never**. You can change your answer any time in the settings.
+
+Only the package name is sent (for example `pypi/numpy`), never your code, and never for your own project's
+functions. Answers are cached, so a package you looked up once also works offline. If the index cannot be reached,
+Ponder says so in one short line and carries on. Publishing an index (for example on GitHub Pages) is described in
+[docs/online-index.md](docs/online-index.md).
+
 ---
 
 ## Writing a `ponder.json`

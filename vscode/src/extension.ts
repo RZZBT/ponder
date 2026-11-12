@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
-import { resolveAt, symbolsAt, type Outcome } from './locate';
+import { RESTRICTED_MODE_REASON, resolveAt, symbolsAt, type Outcome } from './locate';
 import { showAnimation } from './panel';
+import { ExternalSources } from './external';
+import { clearLocalCache } from './local';
 
 export function activate(context: vscode.ExtensionContext): void {
   const log = vscode.window.createOutputChannel('Ponder');
+  const external = new ExternalSources(context, log);
 
   // Like the JetBrains plugin, Alt+W first tries the name under the mouse pointer. VS Code reports the pointer
   // only through hover requests, so remember the last one.
@@ -18,28 +21,12 @@ export function activate(context: vscode.ExtensionContext): void {
       },
     }),
     vscode.commands.registerCommand('ponder.open', async () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) return;
-      const uri = editor.document.uri;
-      const positions = [editor.selection.active];
-      if (hover && hover.uri === uri.toString() && Date.now() - hover.at < 4000 && !hover.pos.isEqual(positions[0]!)) positions.unshift(hover.pos);
-      const outcome = await vscode.window.withProgress(
-        { location: vscode.ProgressLocation.Window, title: 'Ponder: looking up the definition' },
-        async () => {
-          let last: Outcome | null = null;
-          for (const pos of positions) {
-            log.appendLine(`Alt+W at ${uri.fsPath}:${pos.line + 1}:${pos.character + 1} (${editor.document.languageId})`);
-            last = await resolveAt(uri, pos, (s) => log.appendLine(s));
-            if (last.found) break;
-          }
-          return last!;
-        });
-      if (outcome.found) {
-        showAnimation(context, outcome.animation.title, outcome.documentText, outcome.animation.id, log);
-      } else {
-        log.appendLine(`no animation: ${outcome.reason}`);
-        void vscode.window.setStatusBarMessage(`Ponder: ${outcome.reason}`, 6000);
-        void vscode.window.showInformationMessage(`No Ponder animation: ${outcome.reason}`);
+      try {
+        await openPonder(context, log, external, hover);
+      } catch (e) {
+        // a tool meant to help must never greet anyone with a stack trace
+        log.appendLine(`unexpected: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
+        void vscode.window.showInformationMessage('Ponder could not look this up. The "Ponder" output panel has details.');
       }
     }),
 
@@ -60,9 +47,68 @@ export function activate(context: vscode.ExtensionContext): void {
       void vscode.window.setStatusBarMessage(`Copied: ${pick}`, 4000);
     }),
 
+    vscode.commands.registerCommand('ponder.clearCache', () => {
+      external.index.clear();
+      clearLocalCache();
+      void vscode.window.setStatusBarMessage('Ponder: cached animations cleared', 4000);
+    }),
+
     // used by the integration tests
     vscode.commands.registerCommand('ponder._resolve', (uri: vscode.Uri, pos: vscode.Position): Promise<Outcome> => resolveAt(uri, pos)),
   );
+}
+
+async function openPonder(
+  context: vscode.ExtensionContext,
+  log: vscode.OutputChannel,
+  external: ExternalSources,
+  hover: { uri: string; pos: vscode.Position; at: number } | null,
+): Promise<void> {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+  const uri = editor.document.uri;
+  const positions = [editor.selection.active];
+  if (hover && hover.uri === uri.toString() && Date.now() - hover.at < 4000 && !hover.pos.isEqual(positions[0]!)) positions.unshift(hover.pos);
+  const outcome = await vscode.window.withProgress(
+    { location: vscode.ProgressLocation.Window, title: 'Ponder: looking up the definition' },
+    async () => {
+      let last: Outcome | null = null;
+      for (const pos of positions) {
+        log.appendLine(`Alt+W at ${uri.fsPath}:${pos.line + 1}:${pos.character + 1} (${editor.document.languageId})`);
+        last = await resolveAt(uri, pos, (s) => log.appendLine(s));
+        if (last.found) break;
+      }
+      return last!;
+    });
+
+  if (outcome.found) {
+    showAnimation(context, outcome.animation.title, outcome.documentText, outcome.animation.id, log, 'From the library');
+    return;
+  }
+  log.appendLine(`not in the library: ${outcome.reason}`);
+  if (outcome.located) {
+    const ext = await external.find(outcome.located, outcome.reason);
+    if ('hit' in ext) {
+      log.appendLine(`found: ${ext.hit.source}`);
+      showAnimation(context, ext.hit.animation.title, ext.hit.documentText, ext.hit.animation.id, log, ext.hit.source);
+      return;
+    }
+    tell(ext.reason);
+    return;
+  }
+  tell(outcome.reason);
+
+  function tell(reason: string) {
+    log.appendLine(`no animation: ${reason}`);
+    void vscode.window.setStatusBarMessage(`Ponder: ${reason}`, 6000);
+    if (reason === RESTRICTED_MODE_REASON) {
+      void vscode.window.showWarningMessage(`Ponder: ${reason}.`, 'Trust Folder…').then((choice) => {
+        if (choice) void vscode.commands.executeCommand('workbench.trust.manage');
+      });
+      return;
+    }
+    void vscode.window.showInformationMessage(`No Ponder animation: ${reason}`);
+  }
 }
 
 export function deactivate(): void {}

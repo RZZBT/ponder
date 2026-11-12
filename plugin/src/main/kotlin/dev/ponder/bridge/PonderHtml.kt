@@ -12,6 +12,8 @@ data class StartOptions(
     /** null = follow the OS / Chromium `prefers-reduced-motion`; true forces reduced motion. */
     val reducedMotion: Boolean?,
     val colors: Map<String, String>,
+    /** Shown under the title: where the animation comes from. Plain text; the page also caps and cleans it. */
+    val sourceLabel: String? = null,
 )
 
 /**
@@ -48,6 +50,7 @@ html,body{background:$bodyBackground !important}</style>
             addProperty("theme", if (options.dark) "dark" else "light")
             addProperty("autoplay", options.autoplay)
             options.reducedMotion?.let { addProperty("reducedMotion", it) }
+            options.sourceLabel?.let { addProperty("sourceLabel", it.take(80)) }
             add("colors", JsonObject().also { c ->
                 options.colors.forEach { (k, v) -> if (HEX.matches(v) && k in COLOR_KEYS) c.addProperty(k, v) }
             })

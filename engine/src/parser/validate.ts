@@ -387,7 +387,8 @@ export function validateDocument(input: unknown): ValidationResult {
 }
 
 /** Parses + validates raw file text. Enforces the size limit before parsing. */
-export function parseDocument(text: string): ValidationResult {
+export function parseDocument(raw: string): ValidationResult {
+  const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw; // Windows editors save UTF-8 with a byte order mark
   const bytes = typeof TextEncoder !== 'undefined' ? new TextEncoder().encode(text).length : text.length;
   if (bytes > LIMITS.maxFileBytes) {
     return { ok: false, errors: [{ path: '$', message: `File is too large (${bytes} bytes, maximum ${LIMITS.maxFileBytes}).` }], warnings: [] };
