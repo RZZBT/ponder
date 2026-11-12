@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
-import { RESTRICTED_MODE_REASON, resolveAt, symbolsAt, type Outcome } from './locate';
+import { resolveAt, symbolsAt, type Outcome } from './locate';
 import { showAnimation } from './panel';
 import { ExternalSources } from './external';
 import { clearLocalCache } from './local';
+import { showProblem } from './help';
+import { problems } from './problems';
 
 export function activate(context: vscode.ExtensionContext): void {
   const log = vscode.window.createOutputChannel('Ponder');
@@ -26,25 +28,27 @@ export function activate(context: vscode.ExtensionContext): void {
       } catch (e) {
         // a tool meant to help must never greet anyone with a stack trace
         log.appendLine(`unexpected: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
-        void vscode.window.showInformationMessage('Ponder could not look this up. The "Ponder" output panel has details.');
+        void showProblem(problems.unexpected(), log);
       }
     }),
 
     vscode.commands.registerCommand('ponder.copySymbol', async () => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) return;
-      const symbols = await symbolsAt(editor.document.uri, editor.selection.active);
-      if (symbols.length === 0) {
-        void vscode.window.showInformationMessage('Put the cursor on a function or method name.');
-        return;
+      try {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) { void showProblem(problems.noName(), log); return; }
+        const symbols = await symbolsAt(editor.document.uri, editor.selection.active);
+        if (symbols.length === 0) { void showProblem(problems.noName(), log); return; }
+        const pick = symbols.length === 1 ? symbols[0] : await vscode.window.showQuickPick(
+          [...symbols].sort((a, b) => Number(a.startsWith('sym:')) - Number(b.startsWith('sym:'))),
+          { placeHolder: 'Symbol to copy into ponder.json' },
+        );
+        if (!pick) return;
+        await vscode.env.clipboard.writeText(pick);
+        void vscode.window.setStatusBarMessage(`Copied: ${pick}`, 4000);
+      } catch (e) {
+        log.appendLine(`copy symbol: ${e instanceof Error ? e.stack ?? e.message : String(e)}`);
+        void showProblem(problems.unexpected(), log);
       }
-      const pick = symbols.length === 1 ? symbols[0] : await vscode.window.showQuickPick(
-        [...symbols].sort((a, b) => Number(a.startsWith('sym:')) - Number(b.startsWith('sym:'))),
-        { placeHolder: 'Symbol to copy into ponder.json' },
-      );
-      if (!pick) return;
-      await vscode.env.clipboard.writeText(pick);
-      void vscode.window.setStatusBarMessage(`Copied: ${pick}`, 4000);
     }),
 
     vscode.commands.registerCommand('ponder.clearCache', () => {
@@ -52,6 +56,18 @@ export function activate(context: vscode.ExtensionContext): void {
       clearLocalCache();
       void vscode.window.setStatusBarMessage('Ponder: cached animations cleared', 4000);
     }),
+
+    // buttons of problems (help.ts)
+    vscode.commands.registerCommand('ponder.enableOnlineLookup', async () => {
+      await external.enableOnline();
+      void vscode.window.showInformationMessage('Ponder: online lookups are on. Press Alt+W on the function again.');
+    }),
+    vscode.commands.registerCommand('ponder.retryOnline', async () => {
+      external.forgetLastFailure();
+      await vscode.commands.executeCommand('ponder.open');
+    }),
+    vscode.commands.registerCommand('ponder.showExtension', () => vscode.commands.executeCommand('extension.open', context.extension.id)),
+    vscode.commands.registerCommand('ponder.showLog', () => log.show(true)),
 
     // used by the integration tests
     vscode.commands.registerCommand('ponder._resolve', (uri: vscode.Uri, pos: vscode.Position): Promise<Outcome> => resolveAt(uri, pos)),
@@ -65,7 +81,10 @@ async function openPonder(
   hover: { uri: string; pos: vscode.Position; at: number } | null,
 ): Promise<void> {
   const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
+  if (!editor) {
+    void showProblem(problems.noName(), log);
+    return;
+  }
   const uri = editor.document.uri;
   const positions = [editor.selection.active];
   if (hover && hover.uri === uri.toString() && Date.now() - hover.at < 4000 && !hover.pos.isEqual(positions[0]!)) positions.unshift(hover.pos);
@@ -87,28 +106,16 @@ async function openPonder(
   }
   log.appendLine(`not in the library: ${outcome.reason}`);
   if (outcome.located) {
-    const ext = await external.find(outcome.located, outcome.reason);
+    const ext = await external.find(outcome.located, outcome.problem);
     if ('hit' in ext) {
       log.appendLine(`found: ${ext.hit.source}`);
       showAnimation(context, ext.hit.animation.title, ext.hit.documentText, ext.hit.animation.id, log, ext.hit.source);
       return;
     }
-    tell(ext.reason);
+    void showProblem(ext.problem, log);
     return;
   }
-  tell(outcome.reason);
-
-  function tell(reason: string) {
-    log.appendLine(`no animation: ${reason}`);
-    void vscode.window.setStatusBarMessage(`Ponder: ${reason}`, 6000);
-    if (reason === RESTRICTED_MODE_REASON) {
-      void vscode.window.showWarningMessage(`Ponder: ${reason}.`, 'Trust Folder…').then((choice) => {
-        if (choice) void vscode.commands.executeCommand('workbench.trust.manage');
-      });
-      return;
-    }
-    void vscode.window.showInformationMessage(`No Ponder animation: ${reason}`);
-  }
+  void showProblem(outcome.problem ?? problems.unsupportedDeclaration(outcome.reason), log);
 }
 
 export function deactivate(): void {}

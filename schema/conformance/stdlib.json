@@ -1,0 +1,426 @@
+{
+  "//": "Standard-library recognition (Ponder 0.3). Run by engine/tests/stdlib.test.ts and plugin StdLibraryTest.kt; both must agree. expect null = not the standard library.",
+  "cases": [
+    {
+      "name": "Pylance on Windows: a builtin function",
+      "path": "c:\\Users\\d\\.vscode\\extensions\\ms-python.vscode-pylance-2026.4.1\\dist\\typeshed-fallback\\stdlib\\builtins.pyi",
+      "names": [
+        "sorted"
+      ],
+      "expect": {
+        "key": "python/builtins",
+        "version": null,
+        "candidates": [
+          "py:builtins.sorted",
+          "sym:builtins.pyi:sorted"
+        ]
+      }
+    },
+    {
+      "name": "a method of a builtin type",
+      "path": "c:/Users/d/.vscode/extensions/ms-python.vscode-pylance-2026.4.1/dist/typeshed-fallback/stdlib/builtins.pyi",
+      "names": [
+        "str",
+        "split"
+      ],
+      "expect": {
+        "key": "python/builtins",
+        "version": null,
+        "candidates": [
+          "py:builtins.str.split",
+          "sym:builtins.pyi:str.split"
+        ]
+      }
+    },
+    {
+      "name": "a module in a folder",
+      "path": "/home/u/.vscode/extensions/ms-python.vscode-pylance-2026.4.1/dist/typeshed-fallback/stdlib/os/path.pyi",
+      "names": [
+        "join"
+      ],
+      "expect": {
+        "key": "python/os.path",
+        "version": null,
+        "candidates": [
+          "py:os.path.join",
+          "sym:os/path.pyi:join"
+        ]
+      }
+    },
+    {
+      "name": "a package __init__",
+      "path": "/home/u/.vscode/extensions/ms-python.vscode-pylance-2026.4.1/dist/typeshed-fallback/stdlib/collections/__init__.pyi",
+      "names": [
+        "Counter",
+        "most_common"
+      ],
+      "expect": {
+        "key": "python/collections",
+        "version": null,
+        "candidates": [
+          "py:collections.Counter.most_common",
+          "sym:collections/__init__.pyi:Counter.most_common"
+        ]
+      }
+    },
+    {
+      "name": "a private module starting with an underscore",
+      "path": "/x/typeshed-fallback/stdlib/_collections_abc.pyi",
+      "names": [
+        "Sequence",
+        "index"
+      ],
+      "expect": {
+        "key": "python/_collections_abc",
+        "version": null,
+        "candidates": [
+          "py:_collections_abc.Sequence.index",
+          "sym:_collections_abc.pyi:Sequence.index"
+        ]
+      }
+    },
+    {
+      "name": "older Jedi keeps stubs in a numbered folder",
+      "path": "/home/u/.local/lib/python3.12/site-packages/jedi/third_party/typeshed/stdlib/3/builtins.pyi",
+      "names": [
+        "len"
+      ],
+      "expect": {
+        "key": "python/builtins",
+        "version": null,
+        "candidates": [
+          "py:builtins.len",
+          "sym:3/builtins.pyi:len"
+        ]
+      }
+    },
+    {
+      "name": "PyCharm's bundled typeshed",
+      "path": "/opt/pycharm/plugins/python-ce/helpers/typeshed/stdlib/itertools.pyi",
+      "names": [
+        "chain",
+        "from_iterable"
+      ],
+      "expect": {
+        "key": "python/itertools",
+        "version": null,
+        "candidates": [
+          "py:itertools.chain.from_iterable",
+          "sym:itertools.pyi:chain.from_iterable"
+        ]
+      }
+    },
+    {
+      "name": "CPython sources on Linux tell the version",
+      "path": "/usr/lib/python3.12/random.py",
+      "names": [
+        "shuffle"
+      ],
+      "expect": {
+        "key": "python/random",
+        "version": "3.12",
+        "candidates": [
+          "py:random.shuffle",
+          "sym:random.py:shuffle"
+        ]
+      }
+    },
+    {
+      "name": "CPython sources on Windows (python.org installer)",
+      "path": "C:\\Users\\d\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py",
+      "names": [
+        "dumps"
+      ],
+      "expect": {
+        "key": "python/json",
+        "version": "3.12",
+        "candidates": [
+          "py:json.dumps",
+          "sym:json/__init__.py:dumps"
+        ]
+      }
+    },
+    {
+      "name": "CPython sources on Windows (Python install manager)",
+      "path": "C:/Users/d/AppData/Local/Python/pythoncore-3.14-64/Lib/random.py",
+      "names": [
+        "choice"
+      ],
+      "expect": {
+        "key": "python/random",
+        "version": "3.14",
+        "candidates": [
+          "py:random.choice",
+          "sym:random.py:choice"
+        ]
+      }
+    },
+    {
+      "name": "an installed package is not the standard library",
+      "path": "/usr/lib/python3.12/site-packages/numpy/_core/fromnumeric.py",
+      "names": [
+        "clip"
+      ],
+      "expect": null
+    },
+    {
+      "name": "a virtual environment's packages are not the standard library",
+      "path": "D:\\proj\\.venv\\Lib\\site-packages\\more_itertools\\more.py",
+      "names": [
+        "chunked"
+      ],
+      "expect": null
+    },
+    {
+      "name": "your own Python file is not the standard library",
+      "path": "D:\\ItelliJ\\DummyCode\\testing.py",
+      "names": [
+        "main"
+      ],
+      "expect": null
+    },
+    {
+      "name": "a path that climbs out of the stub folder",
+      "path": "/x/typeshed/stdlib/../../evil.pyi",
+      "names": [
+        "f"
+      ],
+      "expect": null
+    },
+    {
+      "name": "TypeScript bundled with VS Code: Array.prototype.map",
+      "path": "c:\\Program Files\\Microsoft VS Code\\c4453f8ea4\\resources\\app\\extensions\\node_modules\\typescript\\lib\\lib.es5.d.ts",
+      "names": [
+        "Array",
+        "map"
+      ],
+      "expect": {
+        "key": "javascript/Array",
+        "version": null,
+        "candidates": [
+          "js:std#Array.map",
+          "sym:lib.es5.d.ts:Array.map"
+        ]
+      }
+    },
+    {
+      "name": "a static method lives on the Constructor interface",
+      "path": "/proj/node_modules/typescript/lib/lib.es2015.core.d.ts",
+      "names": [
+        "ArrayConstructor",
+        "from"
+      ],
+      "expect": {
+        "key": "javascript/Array",
+        "version": null,
+        "candidates": [
+          "js:std#ArrayConstructor.from",
+          "js:std#Array.from",
+          "sym:lib.es2015.core.d.ts:ArrayConstructor.from"
+        ]
+      }
+    },
+    {
+      "name": "a global function",
+      "path": "/proj/node_modules/typescript/lib/lib.es5.d.ts",
+      "names": [
+        "parseInt"
+      ],
+      "expect": {
+        "key": "javascript/globals",
+        "version": null,
+        "candidates": [
+          "js:std#parseInt",
+          "sym:lib.es5.d.ts:parseInt"
+        ]
+      }
+    },
+    {
+      "name": "console.log from the DOM library",
+      "path": "/proj/node_modules/typescript/lib/lib.dom.d.ts",
+      "names": [
+        "Console",
+        "log"
+      ],
+      "expect": {
+        "key": "javascript/Console",
+        "version": null,
+        "candidates": [
+          "js:std#Console.log",
+          "sym:lib.dom.d.ts:Console.log"
+        ]
+      }
+    },
+    {
+      "name": "an npm package's own types are not the standard library",
+      "path": "/proj/node_modules/lodash/index.d.ts",
+      "names": [
+        "chunk"
+      ],
+      "expect": null
+    },
+    {
+      "name": "Rust: a trait method in core",
+      "path": "/home/u/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs",
+      "names": [
+        "Iterator",
+        "map"
+      ],
+      "expect": {
+        "key": "rust/core.iter",
+        "version": null,
+        "candidates": [
+          "rust:core::iter::traits::iterator::Iterator::map",
+          "sym:src/iter/traits/iterator.rs:Iterator.map"
+        ]
+      }
+    },
+    {
+      "name": "Rust on Windows, a versioned toolchain, a mod.rs file",
+      "path": "C:\\Users\\d\\.rustup\\toolchains\\1.98.1-x86_64-pc-windows-msvc\\lib\\rustlib\\src\\rust\\library\\alloc\\src\\vec\\mod.rs",
+      "names": [
+        "Vec",
+        "push"
+      ],
+      "expect": {
+        "key": "rust/alloc.vec",
+        "version": "1.98.1",
+        "candidates": [
+          "rust:alloc::vec::Vec::push",
+          "sym:src/vec/mod.rs:Vec.push"
+        ]
+      }
+    },
+    {
+      "name": "Rust: a single-file module",
+      "path": "/home/u/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/option.rs",
+      "names": [
+        "Option",
+        "unwrap_or"
+      ],
+      "expect": {
+        "key": "rust/core.option",
+        "version": null,
+        "candidates": [
+          "rust:core::option::Option::unwrap_or",
+          "sym:src/option.rs:Option.unwrap_or"
+        ]
+      }
+    },
+    {
+      "name": "Rust: a slice method (impl<T> [T] adds no name)",
+      "path": "/home/u/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/mod.rs",
+      "names": [
+        "windows"
+      ],
+      "expect": {
+        "key": "rust/core.slice",
+        "version": null,
+        "candidates": [
+          "rust:core::slice::windows",
+          "sym:src/slice/mod.rs:windows"
+        ]
+      }
+    },
+    {
+      "name": "Rust: a crate from crates.io is not the standard library",
+      "path": "/home/u/.cargo/registry/src/index.crates.io-6f17d22bba15001f/itertools-0.13.0/src/lib.rs",
+      "names": [
+        "Itertools",
+        "sorted"
+      ],
+      "expect": null
+    },
+    {
+      "name": "Go on Linux",
+      "path": "/usr/local/go/src/strings/strings.go",
+      "names": [
+        "Split"
+      ],
+      "expect": {
+        "key": "go/strings",
+        "version": null,
+        "candidates": [
+          "go:strings.Split",
+          "sym:src/strings/strings.go:Split"
+        ]
+      }
+    },
+    {
+      "name": "Go on Windows: a method",
+      "path": "C:\\Program Files\\Go\\src\\strings\\builder.go",
+      "names": [
+        "Builder",
+        "WriteString"
+      ],
+      "expect": {
+        "key": "go/strings",
+        "version": null,
+        "candidates": [
+          "go:strings.Builder.WriteString",
+          "sym:src/strings/builder.go:Builder.WriteString"
+        ]
+      }
+    },
+    {
+      "name": "Go SDK folder tells the version, nested package",
+      "path": "/home/u/sdk/go1.22.3/src/net/http/server.go",
+      "names": [
+        "ListenAndServe"
+      ],
+      "expect": {
+        "key": "go/net/http",
+        "version": "1.22.3",
+        "candidates": [
+          "go:net/http.ListenAndServe",
+          "sym:src/net/http/server.go:ListenAndServe"
+        ]
+      }
+    },
+    {
+      "name": "a toolchain downloaded by the go command",
+      "path": "/home/u/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.23.4.linux-amd64/src/sort/sort.go",
+      "names": [
+        "Ints"
+      ],
+      "expect": {
+        "key": "go/sort",
+        "version": "1.23.4",
+        "candidates": [
+          "go:sort.Ints",
+          "sym:src/sort/sort.go:Ints"
+        ]
+      }
+    },
+    {
+      "name": "a GOPATH project is not the standard library",
+      "path": "/home/u/go/src/github.com/me/app/main.go",
+      "names": [
+        "main"
+      ],
+      "expect": null
+    },
+    {
+      "name": "a module dependency is not the standard library",
+      "path": "/home/u/go/pkg/mod/github.com/samber/lo@v1.47.0/slice.go",
+      "names": [
+        "Chunk"
+      ],
+      "expect": null
+    },
+    {
+      "name": "Go test files are skipped",
+      "path": "/usr/local/go/src/strings/strings_test.go",
+      "names": [
+        "TestSplit"
+      ],
+      "expect": null
+    },
+    {
+      "name": "no enclosing names",
+      "path": "/usr/local/go/src/strings/strings.go",
+      "names": [],
+      "expect": null
+    }
+  ]
+}

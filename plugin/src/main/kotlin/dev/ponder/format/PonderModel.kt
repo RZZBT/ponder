@@ -70,6 +70,8 @@ class ValidationReport(
     val errors: List<Issue>,
     val warnings: List<Issue>,
     val document: PonderDocument?,
+    /** The file is meant for a newer Ponder (a newer format version, or features this version does not have). */
+    val needsUpdate: Boolean = false,
 ) {
     val ok: Boolean get() = errors.isEmpty() && document != null
 }

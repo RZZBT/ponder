@@ -7,14 +7,20 @@ import { candidates, findRoot, manifestName, sameName, type Dir } from '../../en
 import { Jar, pomCoordinates } from '../../engine/src/node/jar';
 import { cleanName, namesFor, nodePathAt, outlineParams, type OutlineNode } from './outline';
 import { loadDocument, type AnimationRef } from './match';
+import { recognizeStd, goVersionFromFile } from '../../engine/src/sources/stdlib';
+import type { StdLanguage } from '../../engine/src/sources/index-protocol';
+import { BUILT_IN_JS, PROJECT_FILES, languageSupport, problems, unresolvedImport, type Problem } from './problems';
 
 export type Located =
   | { kind: 'package'; root: string; ponderPath: string | null; manifestName: string | null; candidates: string[]; display: string }
-  | { kind: 'jar'; jar: string; candidates: string[]; display: string };
+  | { kind: 'jar'; jar: string; candidates: string[]; display: string }
+  /** A language's standard library (Ponder 0.3): animations come from local folders and the community index. */
+  | { kind: 'std'; language: StdLanguage; module: string; keyName: string; version: string | null; root: string; candidates: string[]; display: string };
 
 export type Outcome =
   | { found: true; animation: AnimationRef; documentText: string; source: string; located: Located }
-  | { found: false; reason: string; located?: Located };
+  /** [reason] is for the log; [problem], when set, is what the user sees. */
+  | { found: false; reason: string; located?: Located; problem?: Problem };
 
 class FsDir implements Dir {
   constructor(readonly path: string) {}
@@ -80,6 +86,14 @@ export async function locate(def: vscode.Location): Promise<Located | string> {
   const nodes = await outlineAt(uri, def.range.start);
   const names = namesFor(nodes);
   if (names.length === 0) return 'the language extension reports no outline for the declaration';
+  const std = recognizeStd(file, names);
+  if (std) {
+    return {
+      kind: 'std', language: std.language, module: std.module, keyName: std.keyName,
+      version: std.version ?? (std.language === 'go' ? goRootVersion(std.root) : null),
+      root: std.root, candidates: std.candidates, display: names[names.length - 1]!,
+    };
+  }
   const root = findRoot(new FsDir(dirname(file)));
   const rootPath = (root.dir as FsDir).path;
   const rel = relative(rootPath, file).split(sep).join('/');
@@ -111,8 +125,17 @@ async function locateInJar(uri: vscode.Uri, pos: vscode.Position): Promise<Locat
   return { kind: 'jar', jar, candidates: [`${fqn}#${name}(${params.join(',')})`], display: member };
 }
 
+/** GOROOT/VERSION starts with `go1.22.3`. */
+function goRootVersion(root: string): string | null {
+  try {
+    const f = join(root, 'VERSION');
+    return statSync(f).size < 4096 ? goVersionFromFile(readFileSync(f, 'utf8')) : null;
+  } catch { return null; }
+}
+
 /** The ponder.json for a located declaration, and the animation in it. */
 export function findAnimation(located: Located): Outcome {
+  if (located.kind === 'std') return { found: false, reason: `part of the ${located.language} standard library (${located.module})`, located };
   let text: string | null = null;
   let source = '';
   let identity: (lib: { group?: string; name: string }) => string | null = () => null;
@@ -140,7 +163,14 @@ export function findAnimation(located: Located): Outcome {
   if (text.length > 256 * 1024) return { found: false, reason: 'ponder.json is larger than 256 KB', located };
 
   const doc = loadDocument(text);
-  if (!doc.ok) return { found: false, reason: `ponder.json is invalid: ${doc.errors[0]?.path}: ${doc.errors[0]?.message}`, located };
+  if (!doc.ok) {
+    const first = doc.errors[0];
+    const library = located.kind === 'package' ? (located.manifestName ?? basename(located.root)) : basename(located.jar);
+    const problem = doc.needsUpdate
+      ? problems.needsUpdate(first?.message ?? 'This animation is meant for a newer Ponder.')
+      : problems.brokenLibraryFile(library, `${first?.path}: ${first?.message}`);
+    return { found: false, reason: `ponder.json is invalid: ${first?.path}: ${first?.message}`, located, problem };
+  }
   const animation = doc.find(located.candidates, located.kind === 'jar');
   if (!animation) return { found: false, reason: `no animation for ${located.candidates[0]}`, located };
   const mismatch = doc.library ? identity(doc.library) : null;
@@ -175,9 +205,6 @@ export async function startLanguageSupport(languageId: string, log?: (s: string)
   return active;
 }
 
-export const RESTRICTED_MODE_REASON =
-  'this folder is open in Restricted Mode, so VS Code\'s language support cannot find where functions are defined. Trust the folder to use Ponder here';
-
 /**
  * The animation for the reference at [pos]. When the language server reports several definitions (TypeScript
  * does for `const { f } = require(...)`: the export entry and the function), each is checked; the result is
@@ -186,10 +213,16 @@ export const RESTRICTED_MODE_REASON =
 export async function resolveAt(uri: vscode.Uri, pos: vscode.Position, log?: (s: string) => void): Promise<Outcome> {
   let defs = await definitionsAt(uri, pos);
   if (defs.length === 0) {
+    // problems that waiting cannot fix are reported at once
+    const early = await whyNoDefinition(uri, pos);
+    if (['no-name', 'restricted-mode', 'no-language-extension', 'language-support-off', 'not-in-project'].includes(early.id)) {
+      log?.(`definitions: none (${early.id})`);
+      return { found: false, reason: early.title, problem: early };
+    }
     const languageId = (await vscode.workspace.openTextDocument(uri)).languageId;
     const active = await startLanguageSupport(languageId, log);
     if (active === 0) {
-      return { found: false, reason: `VS Code has no language extension for "${languageId}" files; install or enable one that supports Go to Definition` };
+      return { found: false, reason: `VS Code has no language extension for "${languageId}" files`, problem: early };
     }
     // a language server that is starting (or loading the project) answers with nothing for a while
     for (let i = 0; i < 30 && defs.length === 0; i++) {
@@ -199,12 +232,8 @@ export async function resolveAt(uri: vscode.Uri, pos: vscode.Position, log?: (s:
   }
   log?.(`definitions: ${defs.length === 0 ? 'none' : defs.map(describeDef).join(', ')}`);
   if (defs.length === 0) {
-    if (!vscode.workspace.isTrusted) {
-      // Restricted Mode switches off most language extensions (JavaScript/TypeScript among them).
-      return { found: false, reason: RESTRICTED_MODE_REASON };
-    }
-    const word = (await vscode.workspace.openTextDocument(uri)).getWordRangeAtPosition(pos);
-    return { found: false, reason: word ? 'the language extension found no definition for this name' : 'put the cursor on a function or method name' };
+    const problem = await whyNoDefinition(uri, pos);
+    return { found: false, reason: problem.title, problem };
   }
 
   const nested = defs.length > 1 ? innermost(defs) : defs[0]!;
@@ -219,8 +248,53 @@ export async function resolveAt(uri: vscode.Uri, pos: vscode.Position, log?: (s:
   const found = outcomes.filter((o): o is Extract<Outcome, { found: true }> => o.found);
   const keys = new Set(found.map((o) => `${o.source}#${o.animation.id}`));
   if (keys.size === 1) return found[0]!;
-  if (keys.size > 1) return { found: false, reason: 'the name has several definitions with different animations' };
-  return outcomes.find((o) => !o.found && o.located) ?? outcomes[0]!;
+  if (keys.size > 1) {
+    const word = await wordAt(uri, pos);
+    return { found: false, reason: 'the name has several definitions with different animations', problem: problems.ambiguous(word ?? 'this name') };
+  }
+  const best = outcomes.find((o) => !o.found && o.located) ?? outcomes[0]!;
+  if (!best.found && !best.located && !best.problem) return { ...best, problem: problems.unsupportedDeclaration(best.reason) };
+  return best;
+}
+
+async function wordAt(uri: vscode.Uri, pos: vscode.Position): Promise<string | null> {
+  try {
+    const doc = await vscode.workspace.openTextDocument(uri);
+    const range = doc.getWordRangeAtPosition(pos);
+    return range ? doc.getText(range) : null;
+  } catch { return null; }
+}
+
+/** Walks up from [dir] (at most 40 levels) looking for [file]. */
+function hasAbove(dir: string, file: string): boolean {
+  let d = dir;
+  for (let i = 0; i < 40; i++) {
+    if (existsSync(join(d, file))) return true;
+    const up = dirname(d);
+    if (up === d) return false;
+    d = up;
+  }
+  return false;
+}
+
+/**
+ * Why the language extension gave no definition, most specific first: no name under the cursor, Restricted Mode,
+ * missing or disabled language support, a file outside any project, a library that is not installed.
+ */
+export async function whyNoDefinition(uri: vscode.Uri, pos: vscode.Position): Promise<Problem> {
+  const doc = await vscode.workspace.openTextDocument(uri);
+  const name = await wordAt(uri, pos);
+  if (!name) return problems.noName();
+  if (!vscode.workspace.isTrusted) return problems.restrictedMode();
+  const languageId = doc.languageId;
+  const support = languageSupport(languageId);
+  if (support && !support.acceptable.some((id) => vscode.extensions.getExtension(id))) return problems.noLanguageExtension(languageId, support);
+  if (BUILT_IN_JS.languages.includes(languageId) && !vscode.extensions.getExtension(BUILT_IN_JS.id)) return problems.languageSupportOff(languageId);
+  const project = PROJECT_FILES[languageId];
+  if (project && uri.scheme === 'file' && !hasAbove(dirname(uri.fsPath), project.file)) return problems.notInProject(languageId);
+  const missing = unresolvedImport(vscode.languages.getDiagnostics(uri).map((d) => ({ message: d.message, code: d.code })));
+  if (missing) return problems.libraryNotInstalled(languageId, missing);
+  return problems.noDefinition(languageId, name);
 }
 
 /** Symbol candidates for the declaration under the cursor, or the declaration a reference points to. */

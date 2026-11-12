@@ -38,7 +38,7 @@ class PonderConfigurable : BoundSearchableConfigurable("Ponder", "dev.ponder.set
                     row { radioButton("No, never go online", PonderSettings.ONLINE_OFF) }
                 }.bind(MutableProperty({ s.onlineLookup ?: PonderSettings.ONLINE_ASK }, { s.onlineLookup = it }), String::class.java)
                 row {
-                    comment("Only the package name is sent (for example pypi/numpy), never your code. Results are cached for a day and work offline afterwards.")
+                    comment("For library functions without an animation of their own, and for built-in functions (standard library). Only the library's name is sent (for example pypi/numpy or std/python/builtins), never your code. Found animations are cached for a day and work offline; \"no animation yet\" is checked again after an hour.")
                 }
                 row("Index address:") {
                     textField()

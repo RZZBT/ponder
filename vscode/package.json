@@ -1,8 +1,8 @@
 {
-  "name": "ponder",
-  "displayName": "Ponder",
+  "name": "ponder-animations",
+  "displayName": "Ponder Animations",
   "description": "Press Alt+W on a library call to see a short, step-by-step animation of what the function does.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "RZZBT",
   "license": "MIT",
   "icon": "images/icon.png",
@@ -64,6 +64,26 @@
         "command": "ponder.clearCache",
         "title": "Clear Cached Animations",
         "category": "Ponder"
+      },
+      {
+        "command": "ponder.enableOnlineLookup",
+        "title": "Turn On Online Lookups",
+        "category": "Ponder"
+      },
+      {
+        "command": "ponder.showLog",
+        "title": "Show Log",
+        "category": "Ponder"
+      },
+      {
+        "command": "ponder.retryOnline",
+        "title": "Retry Online Lookup",
+        "category": "Ponder"
+      },
+      {
+        "command": "ponder.showExtension",
+        "title": "Show Ponder in Extensions",
+        "category": "Ponder"
       }
     ],
     "keybindings": [
@@ -82,6 +102,16 @@
         {
           "command": "ponder.copySymbol",
           "group": "9_cutcopypaste@90"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ponder.retryOnline",
+          "when": "false"
+        },
+        {
+          "command": "ponder.showExtension",
+          "when": "false"
         }
       ]
     },
@@ -126,11 +156,11 @@
           ],
           "default": "ask",
           "enumDescriptions": [
-            "Ask the first time a library has no animation of its own",
-            "Look in the community index when a library has no animation",
+            "Ask the first time a function has no animation on this computer",
+            "Look in the community index when a function has no animation on this computer",
             "Never go online"
           ],
-          "markdownDescription": "For libraries that ship no `ponder.json`, look for an animation in the community index. Only the package name is sent (for example `pypi/numpy`), never your code. Results are cached for a day and work offline afterwards.",
+          "markdownDescription": "For library functions without an animation of their own, and for the language's built-in functions (standard library), look for an animation in the free community index. Only the library's name is sent (for example `pypi/numpy` or `std/python/builtins`), never your code. Found animations are cached for a day and work offline; \"no animation yet\" is checked again after an hour.",
           "scope": "application"
         },
         "ponder.indexUrl": {

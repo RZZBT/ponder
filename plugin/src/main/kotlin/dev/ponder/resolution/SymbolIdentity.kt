@@ -28,6 +28,16 @@ sealed interface Provenance {
     data class Package(val root: VirtualFile, val ponderPath: String?, val manifestName: String?) : Provenance {
         override val key: String get() = "pkg:${root.url}"
     }
+
+    /**
+     * A language's standard library (Ponder 0.3): the JDK, Python's typeshed or CPython sources, Rust's toolchain,
+     * GOROOT. Never has a ponder.json of its own; animations come from local folders and the community index.
+     * [language] and [module] form the index name `<language>/<module>`; [version] is the language version if known.
+     */
+    data class StandardLibrary(val language: String, val module: String, val version: String?) : Provenance {
+        override val key: String get() = "std:$language/$module"
+        val display: String get() = dev.ponder.sources.IndexProtocol.describePackage("std", "$language/$module")
+    }
 }
 
 /** A resolved declaration and the symbol strings that identify it. */

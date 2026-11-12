@@ -1,5 +1,6 @@
 package dev.ponder.resolution
 
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
@@ -10,7 +11,10 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.PsiPolyVariantReference
 import com.intellij.psi.PsiReference
 import com.intellij.psi.util.PsiTreeUtil
+import dev.ponder.matching.PonderProblem
+import dev.ponder.matching.PonderProblems
 import dev.ponder.packages.PackageLayout
+import dev.ponder.sources.StdLibrary
 
 /**
  * Any language whose IDE support resolves references (PyCharm, WebStorm, GoLand, RustRover, RubyMine, PhpStorm,
@@ -30,14 +34,15 @@ class GenericPonderResolver : PonderResolver {
         return null
     }
 
-    override fun explain(file: PsiFile, offset: Int): String {
+    override fun explain(file: PsiFile, offset: Int): PonderProblem {
         for (o in offsets(file, offset)) {
             val ref = file.findReferenceAt(o) ?: continue
             val name = ref.canonicalText.substringAfterLast('.').take(40)
-            if (resolveSingle(ref) == null) return "cannot resolve '$name'; is its package installed and indexed?"
-            return "'$name' is not declared in a package"
+            if (resolveSingle(ref) == null) return PonderProblems.cannotResolve(name, file.language.id.lowercase())
+            // resolves, but to a module, a folder or something without a name path: not a function Ponder can explain
+            return PonderProblems.notAFunction(name)
         }
-        return "the caret is not on a name that refers to a declaration"
+        return PonderProblems.noName()
     }
 
     override fun authoringSymbol(file: PsiFile, offset: Int): String? {
@@ -63,6 +68,19 @@ class GenericPonderResolver : PonderResolver {
         val folder = file.parent ?: return null
         val names = enclosingNames(target)
         if (names.isEmpty()) return null
+
+        // the language's standard library (typeshed stubs, CPython sources, Rust's toolchain, GOROOT)
+        StdLibrary.recognize(file.path, names)?.let { std ->
+            val version = std.version ?: goVersion(std)
+            val identity = SymbolIdentity(
+                language = target.language.id,
+                provenance = Provenance.StandardLibrary(std.language, std.module, version),
+                signature = std.candidates.first(),
+                alternatives = std.candidates.drop(1),
+                displayName = names.last(),
+            )
+            return ResolvedSymbol(identity, useSite)
+        }
 
         val root = PackageLayout.findRoot(VfsDir(folder))
         val rootDir = (root.dir as VfsDir).file
@@ -103,6 +121,15 @@ class GenericPonderResolver : PonderResolver {
     }
 
     private fun List<String>.distinctConsecutive(): List<String> = filterIndexed { i, s -> i == 0 || this[i - 1] != s }
+
+    /** GOROOT/VERSION (`go1.22.3`) when the path itself does not tell the Go version. */
+    private fun goVersion(std: StdLibrary.Declaration): String? {
+        if (std.language != "go" || std.root.isEmpty()) return null
+        return runCatching {
+            val f = LocalFileSystem.getInstance().findFileByPath("${std.root}/VERSION")?.takeIf { !it.isDirectory && it.length < 4096 }
+            f?.let { StdLibrary.goVersionFromFile(String(it.contentsToByteArray(), Charsets.UTF_8)) }
+        }.getOrNull()
+    }
 }
 
 /** [PackageLayout.Dir] over the IDE's virtual file system (also works inside archives). */

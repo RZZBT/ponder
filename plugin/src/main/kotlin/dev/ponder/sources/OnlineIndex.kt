@@ -20,7 +20,8 @@ import java.util.concurrent.ConcurrentHashMap
  * Client of the Ponder online index (protocol: docs/online-index.md). Only the package name is sent (as the URL);
  * never code. Results are cached on disk, so after one lookup a package works offline.
  *
- *  - found, or "this package has no animations" (404): cached for [FRESH_MS];
+ *  - found: cached for [FRESH_MS] (an old copy is still shown at once, and refreshed in the background);
+ *  - "this package has no animations" (404): re-checked after [ABSENT_MS], so newly published animations appear soon;
  *  - network or server problems: remembered for [RETRY_MS] so a flaky connection is not hammered, and any older
  *    cached copy keeps working meanwhile.
  *
@@ -67,7 +68,8 @@ class OnlineIndex {
         if (isLocalBase(base)) return true // a test index on this machine: always pick up the latest edit
         val age = clock() - c.fetchedAt
         return when (c) {
-            is Lookup.Index, is Lookup.Absent -> age > FRESH_MS || age < 0
+            is Lookup.Index -> age > FRESH_MS || age < 0
+            is Lookup.Absent -> age > ABSENT_MS || age < 0
             is Lookup.Failed -> age > RETRY_MS || age < 0
         }
     }
@@ -120,6 +122,15 @@ class OnlineIndex {
                 try { fetch(base, key) } catch (e: Throwable) { /* the cached copy stays in use */ }
             }
         } catch (e: Throwable) { /* the cached copy stays in use */ }
+    }
+
+    /** Forgets a failed lookup so the next lookup asks the index again ("Retry now"). A good copy is kept. */
+    fun forgetFailure(base: String, key: PackageKey) {
+        try {
+            val url = urlFor(base, key) ?: return
+            if (memory[url]?.lookup is Lookup.Failed) memory.remove(url)
+            if (readDisk(url)?.lookup is Lookup.Failed) runCatching { Files.deleteIfExists(fileFor(url)) }
+        } catch (e: Exception) { /* the failure simply expires later */ }
     }
 
     fun clearCache() {
@@ -193,6 +204,7 @@ class OnlineIndex {
     companion object {
         const val FRESH_MS = 24L * 60 * 60 * 1000
         const val RETRY_MS = 15L * 60 * 1000
+        const val ABSENT_MS = 60L * 60 * 1000
 
         private val LOCAL_BASE = Regex("^https?://(localhost|127\\.0\\.0\\.1|\\[::1\\])[:/]")
 
@@ -236,6 +248,17 @@ private object IdeFetcher : OnlineIndex.Fetcher {
 }
 
 /** The first animation in a cached index that fits the installed version and one of [candidates]. */
+/** The message of an index entry that was skipped because it needs a newer Ponder, if any. */
+fun OnlineIndex.Lookup?.newerPonderNeeded(): String? {
+    val index = when (this) {
+        is OnlineIndex.Lookup.Index -> this
+        is OnlineIndex.Lookup.Failed -> previous
+        else -> null
+    } ?: return null
+    val problem = index.parsed.problems.firstOrNull { it.contains("newer Ponder") } ?: return null
+    return problem.replace(Regex("^documents\\[\\d+]\\.ponder: \\$(\\.\\w+)*: "), "")
+}
+
 fun OnlineIndex.Lookup.findAnimation(key: PackageKey, candidates: List<String>): ExternalHit? {
     val index = when (this) {
         is OnlineIndex.Lookup.Index -> this
@@ -245,7 +268,7 @@ fun OnlineIndex.Lookup.findAnimation(key: PackageKey, candidates: List<String>):
     for (d in index.parsed.documents) {
         if (!IndexProtocol.versionInRange(key.version, d.versions)) continue
         val animation = d.document.findAny(candidates) ?: continue
-        return ExternalHit(animation, d.document, "Community index · ${key.ecosystem}/${key.name}")
+        return ExternalHit(animation, d.document, "Community index · ${key.label}")
     }
     return null
 }

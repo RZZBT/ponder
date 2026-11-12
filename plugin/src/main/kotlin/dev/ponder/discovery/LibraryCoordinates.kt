@@ -17,6 +17,8 @@ class LibraryEvidence(val coordinates: List<MavenCoordinates>, val source: Sourc
         LIBRARY_NAME,
         /** package.json, Cargo.toml, go.mod, pyproject.toml, ... at the package root. */
         PACKAGE_MANIFEST,
+        /** The declaration is in the language's standard library (the JDK, typeshed, a Rust toolchain, GOROOT). */
+        STANDARD_LIBRARY,
         NONE,
     }
 

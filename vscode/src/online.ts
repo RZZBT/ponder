@@ -1,6 +1,7 @@
 // Client of the Ponder online index (protocol: docs/online-index.md, shared rules in
 // engine/src/sources/index-protocol.ts). Same behaviour as the JetBrains plugin's OnlineIndex.kt:
-//  - found, or "no animations for this package" (404): cached for FRESH_MS;
+//  - found: cached for FRESH_MS (an old copy is still shown at once and refreshed in the background);
+//  - "no animations for this package" (404): re-checked after ABSENT_MS, so new animations appear soon;
 //  - network or server problems: remembered for RETRY_MS, and an older good copy keeps working meanwhile.
 // No vscode import, so it can be unit-tested. Nothing here throws to callers.
 import { createHash } from 'node:crypto';
@@ -9,13 +10,14 @@ import { join } from 'node:path';
 import * as http from 'node:http';
 import * as https from 'node:https';
 import {
-  ECOSYSTEMS, INDEX_FORMAT, MAX_INDEX_BYTES, indexPath, normalizeBaseUrl, parseIndexFile, versionInRange,
+  describePackage, ECOSYSTEMS, INDEX_FORMAT, MAX_INDEX_BYTES, indexPath, normalizeBaseUrl, parseIndexFile, versionInRange,
   type Ecosystem, type PackageKey, type ParsedIndex,
 } from '../../engine/src/sources/index-protocol';
 import { loadDocument, type AnimationRef } from './match';
 
 export const FRESH_MS = 24 * 60 * 60 * 1000;
 export const RETRY_MS = 15 * 60 * 1000;
+export const ABSENT_MS = 60 * 60 * 1000;
 
 export type Lookup =
   | { kind: 'index'; parsed: ParsedIndex; fetchedAt: number }
@@ -43,6 +45,13 @@ export function urlFor(base: string, key: Pick<PackageKey, 'ecosystem' | 'name'>
   return b && p ? b + p : null;
 }
 
+/** The message of an index entry that was skipped because it needs a newer Ponder, if any. */
+export function newerPonderNeeded(lookup: Lookup | null): string | null {
+  const index = !lookup ? null : lookup.kind === 'index' ? lookup : lookup.kind === 'failed' ? lookup.previous : null;
+  const problem = index?.parsed.problems.find((p) => p.includes('newer Ponder'));
+  return problem ? problem.replace(/^documents\[\d+\]\.ponder: \$(\.\w+)*: /, '') : null;
+}
+
 /** The first animation in a lookup that fits the installed version and one of [candidates]. */
 export function findInLookup(lookup: Lookup | null, key: PackageKey, candidates: string[]): Hit | null {
   const index = !lookup ? null : lookup.kind === 'index' ? lookup : lookup.kind === 'failed' ? lookup.previous : null;
@@ -51,7 +60,7 @@ export function findInLookup(lookup: Lookup | null, key: PackageKey, candidates:
     if (!versionInRange(key.version, d.versions)) continue;
     const doc = loadDocument(d.text);
     const animation = doc.ok ? doc.find(candidates) : null;
-    if (animation) return { animation, documentText: d.text, source: `Community index · ${key.ecosystem}/${key.name}` };
+    if (animation) return { animation, documentText: d.text, source: `Community index · ${describePackage(key)}` };
   }
   return null;
 }
@@ -85,7 +94,7 @@ export class OnlineIndex {
     if (isLocalBase(base)) return true; // a test index on this machine: always pick up the latest edit
     const age = this.now() - c.fetchedAt;
     if (age < 0) return true;
-    return c.kind === 'failed' ? age > RETRY_MS : age > FRESH_MS;
+    return c.kind === 'failed' ? age > RETRY_MS : c.kind === 'absent' ? age > ABSENT_MS : age > FRESH_MS;
   }
 
   /**
@@ -131,6 +140,16 @@ export class OnlineIndex {
     this.memory.set(url, entry);
     this.writeDisk(url, entry);
     return entry.lookup;
+  }
+
+  /** Forgets a failed lookup so the next lookup asks the index again. A good copy (memory or disk) is kept. */
+  forgetFailure(base: string, key: PackageKey): void {
+    const url = urlFor(base, key);
+    if (!url) return;
+    if (this.memory.get(url)?.lookup.kind === 'failed') this.memory.delete(url);
+    if (this.readDisk(url)?.lookup.kind === 'failed') {
+      try { rmSync(this.file(url), { force: true }); } catch { /* the failure simply expires later */ }
+    }
   }
 
   clear(): void {

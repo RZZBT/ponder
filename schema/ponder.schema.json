@@ -21,6 +21,16 @@
       "const": 1,
       "description": "Format version. Ponder v1 files must say 1."
     },
+    "requires": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]{0,39}$"
+      },
+      "description": "Optional Ponder features this file needs. A Ponder that lacks one shows \"update Ponder\" instead of the animation. Leave out, or [], for files that use only version 1 features."
+    },
     "library": {
       "type": "object",
       "description": "The package these animations belong to. Checked against the package that declares the symbol when the IDE can tell.",

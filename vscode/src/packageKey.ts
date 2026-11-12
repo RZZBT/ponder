@@ -134,6 +134,8 @@ export function isOwnCode(root: string, workspaceFolders: string[]): boolean {
 /** Null for the user's own code (never sent anywhere) or when the package cannot be identified for sure. */
 export function packageKeyFor(located: Located, workspaceFolders: string[]): PackageKey | null {
   if (located.kind === 'jar') return packageKeyForJar(located.jar);
+  // the standard library is never the user's own code; the key names the language and module, e.g. std python/builtins
+  if (located.kind === 'std') return valid({ ecosystem: 'std', name: located.keyName, version: located.version });
   if (isOwnCode(located.root, workspaceFolders)) return null;
   return packageKeyForRoot(located.root, located.manifestName);
 }

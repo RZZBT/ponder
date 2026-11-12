@@ -21,6 +21,9 @@ data class PackageKey(
     val evidence: LibraryEvidence.Source,
 ) {
     val display: String get() = "$ecosystem/$name" + (version?.let { " $it" } ?: "")
+
+    /** For people: `Python standard library (builtins)` or `pypi/numpy`. */
+    val label: String get() = IndexProtocol.describePackage(ecosystem, name)
 }
 
 object PackageKeys {
@@ -34,6 +37,8 @@ object PackageKeys {
     fun of(identity: SymbolIdentity, registry: PonderRegistry, project: Project): PackageKey? = try {
         when (val p = identity.provenance) {
             is Provenance.ProjectModule -> null // your own code: nothing to look up
+            is Provenance.StandardLibrary -> PackageKey("std", "${p.language}/${p.module}", p.version, LibraryEvidence.Source.STANDARD_LIBRARY)
+                .takeIf { valid(it) }
             is Provenance.Package -> if (isOwnCode(project, p.root)) null else ofPackageRoot(p.root, p.manifestName)
             is Provenance.Library -> {
                 val ev = registry.evidenceFor(p)

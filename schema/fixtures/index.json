@@ -245,7 +245,7 @@
     "errors": [
       {
         "path": "$.version",
-        "messageContains": "Unsupported format version"
+        "messageContains": "newer than this Ponder understands"
       }
     ]
   },
@@ -334,5 +334,40 @@
     "file": "../../examples/python/mathutils/ponder.json",
     "valid": true,
     "errors": []
+  },
+  {
+    "file": "valid-requires-empty.json",
+    "valid": true,
+    "errors": []
+  },
+  {
+    "file": "invalid-needs-newer-ponder.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.requires",
+        "messageContains": "needs a newer Ponder: it uses \"tables\""
+      }
+    ]
+  },
+  {
+    "file": "invalid-format-version-2.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.version",
+        "messageContains": "Update Ponder to see this animation"
+      }
+    ]
+  },
+  {
+    "file": "invalid-requires-shape.json",
+    "valid": false,
+    "errors": [
+      {
+        "path": "$.requires",
+        "messageContains": "at most 16 feature names"
+      }
+    ]
   }
 ]

@@ -11,6 +11,11 @@ describe('outline names', () => {
   it('strips what language servers add', () => {
     expect(cleanName('clamp(int, int, int) : int')).toEqual(['clamp']);
     expect(cleanName('(*IntStack).Push')).toEqual(['IntStack', 'Push']);
+    // slices, arrays and pointers have no name: their impl blocks add none (Rust std: rust:core::slice::windows)
+    expect(cleanName('impl<T> [T]')).toEqual([]);
+    expect(cleanName('impl<T, const N: usize> [T; N]')).toEqual([]);
+    expect(cleanName('impl str')).toEqual(['str']);
+    expect(cleanName('impl<T, A: Allocator> Vec<T, A>')).toEqual(['Vec']);
     expect(cleanName('(IntStack).Len')).toEqual(['IntStack', 'Len']);
     expect(cleanName('impl IntStack')).toEqual(['IntStack']);
     expect(cleanName('impl<T> Display for Stack<T>')).toEqual(['Stack']);

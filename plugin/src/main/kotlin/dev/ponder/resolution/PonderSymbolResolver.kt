@@ -2,11 +2,14 @@ package dev.ponder.resolution
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.JdkOrderEntry
 import com.intellij.openapi.roots.LibraryOrderEntry
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.ProjectFileIndex
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import dev.ponder.matching.PonderProblem
+import dev.ponder.matching.PonderProblems
 import com.intellij.psi.PsiArrayType
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiClassType
@@ -66,15 +69,16 @@ object PonderSymbolResolver {
         return "$cls#$member(${method.parameterList.parameters.joinToString(",") { erasedName(it.type) }})"
     }
 
-    /** Why [resolveAt] found nothing, in words a user can act on. */
-    fun explain(file: PsiFile, offset: Int): String {
+    /** Why [resolveAt] found nothing, as a problem with steps to try. */
+    fun explain(file: PsiFile, offset: Int): PonderProblem {
         assertReadAccess()
-        val noJdk = ProjectRootManager.getInstance(file.project).projectSdk == null
-        val reason = leavesAt(file, offset).firstNotNullOfOrNull { explainLeaf(it) } ?: "the caret is not on a method name"
-        return if (noJdk) "$reason (the project has no JDK set)" else reason
+        val found = leavesAt(file, offset).firstNotNullOfOrNull { explainLeaf(it) }
+        // without a JDK nothing resolves; that is the first thing to fix
+        if (ProjectRootManager.getInstance(file.project).projectSdk == null && found?.id != "no-name") return PonderProblems.noJdk()
+        return found ?: PonderProblems.noName()
     }
 
-    private fun explainLeaf(leaf: PsiElement): String? {
+    private fun explainLeaf(leaf: PsiElement): PonderProblem? {
         if (leaf is PsiWhiteSpace || leaf is PsiComment) return null
         val ref = leaf.parent as? PsiReferenceExpression ?: return null
         if (leaf !is PsiIdentifier) return null
@@ -82,10 +86,10 @@ object PonderSymbolResolver {
         val result = ref.advancedResolve(false)
         val method = result.element as? PsiMethod
         return when {
-            result.element == null -> "cannot resolve '$name'; is its library on the classpath?"
-            method == null -> null
-            !result.isValidResult -> "the call to '$name' has errors; check its arguments"
-            else -> "'$name' is declared outside this project's libraries"
+            result.element == null -> PonderProblems.cannotResolve(name, "jvm")
+            method == null -> PonderProblems.notAFunction(name)
+            !result.isValidResult -> PonderProblems.callHasErrors(name)
+            else -> PonderProblems.unknownLibrary(name, "The file that defines '$name'")
         }
     }
 
@@ -174,13 +178,15 @@ object PonderSymbolResolver {
         val index = ProjectFileIndex.getInstance(project)
 
         if (index.isInLibraryClasses(vf)) {
-            val entry = index.getOrderEntriesForFile(vf).filterIsInstance<LibraryOrderEntry>().firstOrNull() ?: return null // JDK
+            val entry = index.getOrderEntriesForFile(vf).filterIsInstance<LibraryOrderEntry>().firstOrNull()
+                ?: return jdkProvenance(index, vf, cls)
             val root = index.getClassRootForFile(vf) ?: return null
             return Provenance.Library(root.url, root, entry.libraryName ?: entry.library?.name)
         }
         if (index.isInLibrarySource(vf)) {
             // attached sources jar: ponder.json lives in the classes root that holds the compiled class
-            val entry = index.getOrderEntriesForFile(vf).filterIsInstance<LibraryOrderEntry>().firstOrNull() ?: return null
+            val entry = index.getOrderEntriesForFile(vf).filterIsInstance<LibraryOrderEntry>().firstOrNull()
+                ?: return jdkProvenance(index, vf, cls)
             val binary = ClassUtil.getJVMClassName(cls)?.replace('.', '/') ?: return null
             val root = entry.library?.getFiles(OrderRootType.CLASSES)
                 ?.firstOrNull { it.findFileByRelativePath("$binary.class") != null } ?: return null
@@ -191,6 +197,21 @@ object PonderSymbolResolver {
             return Provenance.ProjectModule(module)
         }
         return null
+    }
+
+    /**
+     * A class of the project's JDK (java.util.ArrayList, java.lang.Math, ...): Java's standard library. Null when
+     * the file belongs to no JDK, e.g. a class nobody can attribute.
+     */
+    private fun jdkProvenance(index: ProjectFileIndex, vf: VirtualFile, cls: PsiClass): Provenance? {
+        val jdk = index.getOrderEntriesForFile(vf).filterIsInstance<JdkOrderEntry>().firstOrNull() ?: return null
+        var top: PsiClass = cls
+        while (true) top = top.containingClass ?: break
+        val pkg = top.qualifiedName?.substringBeforeLast('.', "")?.takeIf { it.isNotEmpty() } ?: return null
+        val version = runCatching { jdk.jdk?.versionString }.getOrNull()
+            ?.let { Regex("(\\d+(?:\\.\\d+)*)").find(it)?.value }
+        return Provenance.StandardLibrary("java", pkg, version)
+            .takeIf { dev.ponder.sources.IndexProtocol.canonicalName("std", "java/$pkg") != null }
     }
 
     private fun assertReadAccess() {

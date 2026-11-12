@@ -1,0 +1,41 @@
+{
+  "version": 2,
+  "library": {
+    "group": "g",
+    "name": "n"
+  },
+  "animations": {
+    "a": {
+      "symbol": "p.C#m(int)",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "circle",
+          "radius": 10
+        }
+      },
+      "slides": [
+        {
+          "id": "s1"
+        },
+        {
+          "id": "s2",
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "to": "s2",
+          "trigger": "auto",
+          "style": "fluid",
+          "duration": 400
+        }
+      ]
+    }
+  },
+  "somethingNew": true
+}

@@ -8,6 +8,8 @@ export interface AnimationRef { id: string; title: string; symbol: string }
 export interface LoadedDocument {
   ok: boolean;
   errors: Issue[];
+  /** The file is meant for a newer Ponder. */
+  needsUpdate?: boolean;
   library?: { group?: string; name: string };
   find(candidates: string[], looseJvm?: boolean): AnimationRef | null;
 }
@@ -25,7 +27,7 @@ export function looseJvm(symbol: string): string | null {
 export function loadDocument(text: string): LoadedDocument {
   const result = parseDocument(text);
   const doc = result.document;
-  if (!result.ok || !doc) return { ok: false, errors: result.errors, find: () => null };
+  if (!result.ok || !doc) return { ok: false, errors: result.errors, needsUpdate: result.needsUpdate === true, find: () => null };
 
   const exact = new Map<string, AnimationRef>();
   const loose = new Map<string, AnimationRef[]>();

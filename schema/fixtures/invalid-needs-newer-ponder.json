@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "library": {
+    "group": "g",
+    "name": "n"
+  },
+  "animations": {
+    "a": {
+      "symbol": "p.C#m(int)",
+      "title": "t",
+      "actors": {
+        "x": {
+          "type": "table",
+          "radius": 10,
+          "rows": 3
+        }
+      },
+      "slides": [
+        {
+          "id": "s1"
+        },
+        {
+          "id": "s2",
+          "changes": {
+            "x": {
+              "x": 5
+            }
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "to": "s2",
+          "trigger": "auto",
+          "style": "fluid",
+          "duration": 400
+        }
+      ]
+    }
+  },
+  "requires": [
+    "tables"
+  ]
+}

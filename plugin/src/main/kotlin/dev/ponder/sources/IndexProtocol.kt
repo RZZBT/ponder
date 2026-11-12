@@ -24,9 +24,32 @@ object IndexProtocol {
     const val MAX_INDEX_BYTES = 2 * 1024 * 1024
     const val MAX_INDEX_DOCUMENTS = 32
 
-    val ECOSYSTEMS = listOf("maven", "npm", "pypi", "crates", "go", "packagist", "nuget")
+    /** `std` is a language's standard library (Ponder 0.3): name `<language>/<module>`, e.g. `python/builtins`. */
+    val ECOSYSTEMS = listOf("maven", "npm", "pypi", "crates", "go", "packagist", "nuget", "std")
 
     private val SEGMENT = Regex("^[A-Za-z0-9][A-Za-z0-9._~-]*$")
+    // standard-library modules may start with "_" (Python's `_collections_abc`)
+    private val STD_SEGMENT = Regex("^[A-Za-z0-9_][A-Za-z0-9._~-]*$")
+
+    class StdLanguage(val display: String, val module: Regex)
+
+    /** Languages whose standard library Ponder can look up, and how their modules are written. */
+    val STD_LANGUAGES: Map<String, StdLanguage> = mapOf(
+        "python" to StdLanguage("Python", Regex("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*){0,7}$")),
+        "javascript" to StdLanguage("JavaScript", Regex("^[A-Za-z_][A-Za-z0-9_]{0,63}$")),
+        "java" to StdLanguage("Java", Regex("^[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*){0,9}$")),
+        "rust" to StdLanguage("Rust", Regex("^(core|alloc|std|proc_macro|test)(\\.[a-z_][a-z0-9_]*)?$")),
+        "go" to StdLanguage("Go", Regex("^[a-z0-9][a-z0-9_]*(/[a-z0-9_][a-z0-9_.]*){0,6}$")),
+    )
+
+    /** `Python standard library (builtins)` for std keys, `pypi/numpy` for packages. For messages, never for URLs. */
+    fun describePackage(ecosystem: String, name: String): String {
+        if (ecosystem == "std") {
+            val language = name.substringBefore('/')
+            return "${STD_LANGUAGES[language]?.display ?: language} standard library (${name.substringAfter('/')})"
+        }
+        return "$ecosystem/$name"
+    }
 
     /** Canonical package name used in URLs and comparisons; null if [raw] cannot be a package of [ecosystem]. */
     fun canonicalName(ecosystem: String, raw: String): String? {
@@ -60,6 +83,18 @@ object IndexProtocol {
                 canonical = name
                 segments = canonical.split('/')
                 if (segments.size > 16) return null
+            }
+            "std" -> {
+                val slash = name.indexOf('/')
+                if (slash <= 0) return null
+                val language = name.substring(0, slash).lowercase()
+                val module = name.substring(slash + 1) // case kept: Java classes and JavaScript globals are case-sensitive
+                val rule = STD_LANGUAGES[language] ?: return null
+                if (!rule.module.matches(module)) return null
+                for (s in listOf(language) + module.split('/')) {
+                    if (!STD_SEGMENT.matches(s) || s == "." || s == ".." || s.length > 128) return null
+                }
+                return "$language/$module"
             }
             else -> return null
         }

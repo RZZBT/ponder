@@ -11,18 +11,44 @@ export const INDEX_FORMAT = 1;
 export const MAX_INDEX_BYTES = 2 * 1024 * 1024;
 export const MAX_INDEX_DOCUMENTS = 32;
 
-export const ECOSYSTEMS = ['maven', 'npm', 'pypi', 'crates', 'go', 'packagist', 'nuget'] as const;
+/** `std` is a language's standard library (Ponder 0.3): name `<language>/<module>`, e.g. `python/builtins`. */
+export const ECOSYSTEMS = ['maven', 'npm', 'pypi', 'crates', 'go', 'packagist', 'nuget', 'std'] as const;
 export type Ecosystem = (typeof ECOSYSTEMS)[number];
 
 /** A package as the index knows it. [version] is the installed version when the client can tell, else null. */
 export interface PackageKey {
   ecosystem: Ecosystem;
-  /** maven: `group:artifact`; npm: `name` or `@scope/name`; go: module path; packagist: `vendor/name`. */
+  /**
+   * maven: `group:artifact`; npm: `name` or `@scope/name`; go: module path; packagist: `vendor/name`;
+   * std: `<language>/<module>`. For std, [version] is the language version (Python 3.12, JDK 21, Rust 1.98).
+   */
   name: string;
   version: string | null;
 }
 
 const SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._~-]*$/;
+// standard-library modules may start with "_" (Python's `_collections_abc`)
+const STD_SEGMENT = /^[A-Za-z0-9_][A-Za-z0-9._~-]*$/;
+
+/** Languages whose standard library Ponder can look up, and how their modules are written. */
+export const STD_LANGUAGES = {
+  python: { display: 'Python', module: /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*){0,7}$/ },
+  javascript: { display: 'JavaScript', module: /^[A-Za-z_][A-Za-z0-9_]{0,63}$/ },
+  java: { display: 'Java', module: /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*){0,9}$/ },
+  rust: { display: 'Rust', module: /^(core|alloc|std|proc_macro|test)(\.[a-z_][a-z0-9_]*)?$/ },
+  go: { display: 'Go', module: /^[a-z0-9][a-z0-9_]*(\/[a-z0-9_][a-z0-9_.]*){0,6}$/ },
+} as const;
+export type StdLanguage = keyof typeof STD_LANGUAGES;
+
+/** `Python standard library (builtins)` for std keys, `pypi/numpy` for packages. For messages, never for URLs. */
+export function describePackage(key: Pick<PackageKey, 'ecosystem' | 'name'>): string {
+  if (key.ecosystem === 'std') {
+    const [language, ...module] = key.name.split('/');
+    const lang = STD_LANGUAGES[language as StdLanguage]?.display ?? language;
+    return `${lang} standard library (${module.join('/')})`;
+  }
+  return `${key.ecosystem}/${key.name}`;
+}
 
 /** The canonical name used in URLs and for comparisons. Null if the name cannot be a package of that ecosystem. */
 export function canonicalName(ecosystem: Ecosystem, raw: string): string | null {
@@ -69,6 +95,20 @@ export function canonicalName(ecosystem: Ecosystem, raw: string): string | null 
       segments = canonical.split('/');
       if (segments.length > 16) return null;
       break;
+    case 'std': {
+      const slash = name.indexOf('/');
+      if (slash <= 0) return null;
+      const language = name.slice(0, slash).toLowerCase();
+      const module = name.slice(slash + 1); // case kept: Java classes and JavaScript globals are case-sensitive
+      const rule = STD_LANGUAGES[language as StdLanguage];
+      if (!Object.prototype.hasOwnProperty.call(STD_LANGUAGES, language) || !rule.module.test(module)) return null;
+      canonical = `${language}/${module}`;
+      segments = [language, ...module.split('/')];
+      for (const s of segments) {
+        if (!STD_SEGMENT.test(s) || s === '.' || s === '..' || s.length > 128) return null;
+      }
+      return canonical;
+    }
     default:
       return null;
   }

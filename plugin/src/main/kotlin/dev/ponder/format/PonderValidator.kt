@@ -93,6 +93,25 @@ object PonderValidator {
         "group" to COMMON,
     )
 
+    /**
+     * Optional features a file can declare in `"requires"`. A file that requires a feature missing here is reported
+     * with one clear "update Ponder" message. Keep equal to PONDER_FEATURES in engine/src/parser/validate.ts.
+     */
+    val PONDER_FEATURES: Set<String> = emptySet()
+    private val FEATURE_NAME = Regex("^[a-z][a-z0-9-]{0,39}$")
+
+    /** Why [root] is meant for a newer Ponder, or null. Checked before anything else. */
+    private fun newerPonderNeeded(root: JsonObject): Issue? {
+        val v = num(root.get("version"))
+        if (v != null && v == Math.floor(v) && v > 1 && v < 1e9) {
+            return Issue("$.version", "This file uses ponder.json format version ${v.toLong()}, which is newer than this Ponder understands (version 1). Update Ponder to see this animation.")
+        }
+        val req = root.get("requires") as? JsonArray ?: return null
+        val missing = req.mapNotNull { str(it) }.filter { it.matches(FEATURE_NAME) && it !in PONDER_FEATURES }
+        if (missing.isEmpty()) return null
+        return Issue("$.requires", "This file needs a newer Ponder: it uses ${missing.joinToString(", ") { "\"$it\"" }}, which this version does not have. Update Ponder to see this animation.")
+    }
+
     private fun failed(path: String, message: String) = ValidationReport(listOf(Issue(path, message)), emptyList(), null)
 
     /** Bracket depth, computed without recursion so deep input cannot overflow the stack. */
@@ -158,7 +177,17 @@ object PonderValidator {
                 error("$", "A ponder.json file must contain a JSON object, but found ${describe(root)}.")
                 return ValidationReport(errors, warnings, null)
             }
-            checkKeys("$", root, listOf("\$schema", "version", "library", "animations"))
+            newerPonderNeeded(root)?.let { return ValidationReport(listOf(it), emptyList(), null, needsUpdate = true) }
+            checkKeys("$", root, listOf("\$schema", "version", "requires", "library", "animations"))
+            root.get("requires")?.let { req ->
+                if (req !is JsonArray || req.size() > 16) {
+                    error("$.requires", "Expected a list of at most 16 feature names, e.g. \"requires\": [].")
+                } else {
+                    req.forEachIndexed { i, f ->
+                        if (str(f)?.matches(FEATURE_NAME) != true) error("$.requires[$i]", "Expected a feature name (lower-case letters, digits and dashes) but found ${describe(f)}.")
+                    }
+                }
+            }
             val version = root.get("version")
             if (version == null) error("$.version", "Required property is missing. Add \"version\": 1.")
             else if (num(version) != 1.0) error("$.version", "Unsupported format version ${describe(version)}. This Ponder understands version 1 only.")

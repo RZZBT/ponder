@@ -59,6 +59,7 @@ walks past a package root, so one package cannot pick up another package's file.
 | Property | Meaning |
 |---|---|
 | `version` | Must be `1`. |
+| `requires` | Optional list of Ponder features the file needs, e.g. `[]`. See [Versioning](#versioning-and-migration). |
 | `library.name` | Package name: Maven artifactId, npm, PyPI, crate or NuGet name, or Go module path. Checked against the package that declares the function when the IDE can tell (`pom.properties`, `package.json`, `Cargo.toml`, ...). A mismatch hides the animation. |
 | `library.group` | Maven groupId. JVM only, optional. |
 | `library.version` | Informational. |
@@ -159,6 +160,13 @@ whatever the file says.
 A file over any limit is rejected; *Tools | Ponder: Show Diagnostics* shows the JSON path of the problem.
 
 ## Versioning and migration
+
+**`requires` (Ponder 0.3).** A file can list optional features it needs: `"requires": ["some-feature"]`. A Ponder
+that does not have one of them shows "This animation needs a newer Ponder", with an update button, instead of
+errors about properties it does not know. Ponder 0.3 defines no optional features yet, so `[]` or no `requires`
+at all is correct today. Feature names are lower-case letters, digits and dashes, at most 16 of them. A file with a
+newer `version` number is reported the same way.
+
 `version` is an integer. A reader accepts only versions it knows. Additive changes (new optional properties, actor types,
 easings) stay in version 1 only if old readers still reject nothing they previously accepted; otherwise the version is
 bumped. A breaking change (v2) ships with a documented one-page migration, and the IDE keeps reading v1 files for at least

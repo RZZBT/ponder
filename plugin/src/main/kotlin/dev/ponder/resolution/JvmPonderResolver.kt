@@ -9,7 +9,7 @@ class JvmPonderResolver : PonderResolver {
 
     override fun resolveAt(file: PsiFile, offset: Int): ResolvedSymbol? = PonderSymbolResolver.resolveAt(file, offset)
 
-    override fun explain(file: PsiFile, offset: Int): String = PonderSymbolResolver.explain(file, offset)
+    override fun explain(file: PsiFile, offset: Int): dev.ponder.matching.PonderProblem = PonderSymbolResolver.explain(file, offset)
 
     override fun authoringSymbol(file: PsiFile, offset: Int): String? =
         PonderSymbolResolver.methodForAuthoring(file, offset)?.let { PonderSymbolResolver.symbolString(it) }

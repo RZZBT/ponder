@@ -31,6 +31,9 @@ export function cleanName(raw: string): string[] {
   if (go) return [go[1]!, go[2]!];
   const impl = /^impl(?:<[^>]*>)?\s+(?:.+\s+for\s+)?([A-Za-z_][\w:]*)/.exec(s);
   if (impl) s = impl[1]!;
+  // `impl<T> [T]`, `impl<T, const N: usize> [T; N]`, `impl<T> *const T`: the type has no name, so the block adds
+  // none (Rust's slice methods are `rust:core::slice::windows`), as in the JetBrains plugin and the index tools
+  else if (/^impl\b/.test(s)) return [];
   s = s.replace(/\(.*$/s, '').replace(/<[^>]*>/g, '').replace(/\s+:\s.*$/s, '').trim();
   if (!s) return [];
   return s.split(/::|:/).filter((p) => p.length > 0).map((p) => p.trim()); // Lua methods: IntStack:push

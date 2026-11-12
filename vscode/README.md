@@ -18,6 +18,14 @@ No setup. No accounts. Nothing to configure.
    more-itertools and more), Ponder can fetch one from the free [Ponder Index](https://github.com/RZZBT/ponder-index).
    Every example in it is checked against the real library.
 
+**Built-in functions too.** `sorted(...)`, `"a,b".split(",")`, `arr.map(...)`, `Math.max(...)`, `v.push(x)`,
+`strings.Split(...)`: functions of the language itself (Python, JavaScript/TypeScript, Rust, Go) are looked up the
+same way.
+
+**Never a dead end.** When there is no animation, Ponder tells you why and what to try, with buttons for the fixes:
+install the missing language extension, trust the folder, install a missing library, pick the Python interpreter,
+retry, or update Ponder. *How to fix…* opens a page with every step.
+
 ## Your privacy
 
 - Ponder asks **once** before it ever goes online: *Allow*, *Not now* or *Never*.

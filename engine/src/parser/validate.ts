@@ -13,6 +13,32 @@ export interface ValidationResult {
   errors: Issue[];
   warnings: Issue[];
   document?: PonderDocument;
+  /** The file is meant for a newer Ponder (a newer format version, or features this version does not have). */
+  needsUpdate?: boolean;
+}
+
+/**
+ * Optional features a file can declare in `"requires"`. A file that requires a feature missing here is reported
+ * with one clear "update Ponder" message instead of errors about properties this version does not know. Add a name
+ * here when a feature ships; never remove one.
+ */
+export const PONDER_FEATURES: readonly string[] = [];
+const FEATURE_NAME = /^[a-z][a-z0-9-]{0,39}$/;
+
+/** Why [input] is meant for a newer Ponder, or null. Checked before anything else. */
+function newerPonderNeeded(input: Record<string, unknown>): Issue | null {
+  const v = input.version;
+  if (typeof v === 'number' && Number.isInteger(v) && v > 1) {
+    return { path: '$.version', message: `This file uses ponder.json format version ${v}, which is newer than this Ponder understands (version 1). Update Ponder to see this animation.` };
+  }
+  const r = input.requires;
+  if (Array.isArray(r)) {
+    const missing = r.filter((f): f is string => typeof f === 'string' && FEATURE_NAME.test(f) && !PONDER_FEATURES.includes(f));
+    if (missing.length > 0) {
+      return { path: '$.requires', message: `This file needs a newer Ponder: it uses ${missing.map((f) => `"${f}"`).join(', ')}, which this version does not have. Update Ponder to see this animation.` };
+    }
+  }
+  return null;
 }
 
 const MAX_ISSUES = 100;
@@ -350,7 +376,18 @@ export function validateDocument(input: unknown): ValidationResult {
     if (!isObj(input)) {
       ctx.error('$', `A ponder.json file must contain a JSON object, but found ${describe(input)}.`);
     } else {
-      checkKeys(ctx, '$', input, ['$schema', 'version', 'library', 'animations']);
+      const newer = newerPonderNeeded(input);
+      if (newer) return { ok: false, errors: [newer], warnings: [], needsUpdate: true };
+      checkKeys(ctx, '$', input, ['$schema', 'version', 'requires', 'library', 'animations']);
+      if (input.requires !== undefined) {
+        if (!Array.isArray(input.requires) || input.requires.length > 16) {
+          ctx.error('$.requires', 'Expected a list of at most 16 feature names, e.g. "requires": [].');
+        } else {
+          input.requires.forEach((f, i) => {
+            if (typeof f !== 'string' || !FEATURE_NAME.test(f)) ctx.error(`$.requires[${i}]`, `Expected a feature name (lower-case letters, digits and dashes) but found ${describe(f)}.`);
+          });
+        }
+      }
       if (input.version !== 1) {
         ctx.error('$.version', input.version === undefined
           ? 'Required property is missing. Add "version": 1.'

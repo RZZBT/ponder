@@ -110,6 +110,28 @@ describe('check-index', () => {
     expect(errors(checkIndex(good))).toEqual([]);
   });
 
+  it('standard-library files are checked like packages (Ponder 0.3)', () => {
+    const good = folder({
+      'v1/std/python/builtins.json': indexFile('std', 'python/builtins', [{ versions: '>=3.8', ponder: doc('python/builtins') }]),
+      'v1/std/go/net/http.json': indexFile('std', 'go/net/http', [{ ponder: doc('go/net/http') }]),
+      'v1/std/javascript/Array.json': indexFile('std', 'javascript/Array', [{ ponder: doc('javascript/Array') }]),
+    });
+    expect(errors(checkIndex(good))).toEqual([]);
+    expect(checkIndex(good).filter((x) => x.severity === 'ok')).toHaveLength(3);
+
+    const wrong = folder({
+      'v1/std/Python/builtins.json': indexFile('std', 'python/builtins', [{ ponder: doc('python/builtins') }]),
+      'v1/std/cobol/core.json': '{}',
+    });
+    const msgs = errors(checkIndex(wrong)).map((x) => `${x.where}: ${x.message}`);
+    expect(msgs.some((m) => m.startsWith('v1/std/Python/builtins.json: clients request v1/std/python/builtins.json'))).toBe(true);
+    expect(msgs.some((m) => m.startsWith('v1/std/cobol/core.json'))).toBe(true);
+
+    // separate folder: on Windows "Python" and "python" are the same folder
+    const mismatch = folder({ 'v1/std/python/itertools.json': indexFile('std', 'python/itertools', [{ ponder: doc('python/builtins') }]) });
+    expect(errors(checkIndex(mismatch)).map((x) => x.message).join('\n')).toContain('is not python/itertools');
+  });
+
   it('json files outside v1/ are only noted', () => {
     const dir = folder({
       'package.json': '{}',
@@ -126,6 +148,8 @@ describe('keyFromIndexPath', () => {
     ['v1/npm/@types/node.json', { ecosystem: 'npm', name: '@types/node' }],
     ['v1/maven/com.example/math-utils.json', { ecosystem: 'maven', name: 'com.example:math-utils' }],
     ['v1/go/github.com/gorilla/mux.json', { ecosystem: 'go', name: 'github.com/gorilla/mux' }],
+    ['v1/std/python/builtins.json', { ecosystem: 'std', name: 'python/builtins' }],
+    ['v1/std/go/net/http.json', { ecosystem: 'std', name: 'go/net/http' }],
     ['v2/npm/x.json', null],
     ['v1/npm/x.txt', null],
     ['v1/x.json', null],

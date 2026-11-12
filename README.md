@@ -99,6 +99,19 @@ functions. Answers are cached, so a package you looked up once also works offlin
 Ponder says so in one short line and carries on. Publishing an index (for example on GitHub Pages) is described in
 [docs/online-index.md](docs/online-index.md).
 
+### Built-in functions (Ponder 0.3)
+
+Alt+W also works on functions of the language itself: `sorted(...)` and `"a,b".split(",")` in Python,
+`arr.map(...)` and `Math.max(...)` in JavaScript and TypeScript, `list.add(x)` in Java (JetBrains IDEs),
+`v.push(x)` in Rust, `strings.Split(...)` in Go. Their animations come from `.ponder` folders and from the
+community index (`v1/std/<language>/<module>.json`), under the same privacy rules.
+
+### When there is no animation
+
+Ponder never just says "no". It says what happened, why, and what to **try**, with buttons for the fixes it can do
+for you: install the missing language extension, trust the folder, install a missing library, select the Python
+interpreter, set a JDK, turn on online lookups, retry, or update Ponder.
+
 ---
 
 ## Writing a `ponder.json`

@@ -16,6 +16,8 @@ object PonderDiscovery {
         is Provenance.Package -> provenance.ponderPath
             ?.let { provenance.root.takeIf { r -> r.isValid }?.findFileByRelativePath(it) }
             ?.takeIf { !it.isDirectory }
+        // the standard library never ships a ponder.json; local folders and the index provide its animations
+        is Provenance.StandardLibrary -> null
     }
 
     /** First-party code: `META-INF/ponder/ponder.json` under a source/resource root, else `ponder.json` in a content root. */

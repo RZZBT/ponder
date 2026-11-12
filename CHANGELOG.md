@@ -2,7 +2,39 @@
 
 ## [Unreleased]
 
-## [0.2.0]
+## [0.3.0]
+
+### Added
+- **Built-in functions.** Alt+W on a function of the language itself (`sorted`, `str.split`, `Array.map`,
+  `ArrayList.add`, `Vec::push`, `strings.Split`) looks for an animation for the standard library: in `.ponder`
+  folders, then in the community index under `v1/std/<language>/<module>.json`. Recognised:
+  - Python: typeshed stubs (Pylance, basedpyright, Jedi, PyCharm) and CPython's own sources;
+  - JavaScript/TypeScript: TypeScript's built-in `lib.*.d.ts` files;
+  - Java: classes of the project's JDK (JetBrains IDEs);
+  - Rust: the toolchain's `rust-src` (`core`, `alloc`, `std`);
+  - Go: GOROOT, Go SDKs and downloaded toolchains.
+  The language version (Python 3.12, JDK 21, Rust 1.98, Go 1.22) is used for version ranges when it is known.
+- Friendly problems: every way of not finding an animation now says what happened, why, and what to **try**, with
+  buttons for the fixes (install the language extension, trust the folder, select the Python interpreter, open the
+  terminal, turn on online lookups, retry, update Ponder). VS Code shows a notification and a "How to fix…" page;
+  JetBrains IDEs show a hint at the caret and a notification.
+- Recognised setup problems: Restricted Mode, a missing or disabled language extension, a Rust/Go file outside any
+  project, a library that is not installed (read from the editor's own import errors), no JDK, a broken library
+  `ponder.json`, an animation that needs a newer Ponder.
+- `"requires"` in ponder.json: optional features a file needs. A Ponder without one of them says "update Ponder"
+  instead of failing on properties it does not know. Files with a newer format version are reported the same way.
+- Shared conformance cases for standard-library recognition (`schema/conformance/stdlib.json`), run by both clients.
+
+### Changed
+- "No animation for this package" answers from the community index are checked again after an hour instead of a
+  day, so newly published animations show up quickly. Found animations are still cached for a day.
+- The consent question and popup labels name the standard library in words ("Python standard library (builtins)").
+
+### Fixed
+- *Retry now* after a network failure: the failure was also stored on disk and came back at once.
+- Without the language extension installed, Ponder waited 15 seconds before answering; it now answers at once.
+
+## [0.2.1]
 
 ### Added
 - Animations for libraries that ship none: local folders (`<project>/.ponder/` and folders from the settings), then

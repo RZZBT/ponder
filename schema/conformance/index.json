@@ -1,136 +1,790 @@
 {
   "//": "Online index protocol cases. Run by engine/tests/index-protocol.test.ts and plugin IndexProtocolTest.kt; both must agree.",
   "paths": [
-    { "ecosystem": "pypi", "name": "numpy", "path": "v1/pypi/numpy.json" },
-    { "ecosystem": "pypi", "name": "Scikit_Learn", "path": "v1/pypi/scikit-learn.json" },
-    { "ecosystem": "pypi", "name": "zope.interface", "path": "v1/pypi/zope-interface.json" },
-    { "ecosystem": "npm", "name": "lodash", "path": "v1/npm/lodash.json" },
-    { "ecosystem": "npm", "name": "@types/Node", "path": "v1/npm/@types/node.json" },
-    { "ecosystem": "maven", "name": "com.google.guava:guava", "path": "v1/maven/com.google.guava/guava.json" },
-    { "ecosystem": "crates", "name": "serde_json", "path": "v1/crates/serde-json.json" },
-    { "ecosystem": "go", "name": "github.com/gorilla/mux", "path": "v1/go/github.com/gorilla/mux.json" },
-    { "ecosystem": "packagist", "name": "Monolog/Monolog", "path": "v1/packagist/monolog/monolog.json" },
-    { "ecosystem": "nuget", "name": "Newtonsoft.Json", "path": "v1/nuget/newtonsoft.json.json" },
-    { "ecosystem": "npm", "name": "../etc/passwd", "path": null },
-    { "ecosystem": "npm", "name": "a/b", "path": null },
-    { "ecosystem": "npm", "name": "@scope/a/b", "path": null },
-    { "ecosystem": "go", "name": "example.com/../x", "path": null },
-    { "ecosystem": "go", "name": "example.com//x", "path": null },
-    { "ecosystem": "maven", "name": "guava", "path": null },
-    { "ecosystem": "maven", "name": "a:b:c", "path": null },
-    { "ecosystem": "pypi", "name": "", "path": null },
-    { "ecosystem": "pypi", "name": "num py", "path": null },
-    { "ecosystem": "pypi", "name": "x?y=1", "path": null },
-    { "ecosystem": "pypi", "name": "%2e%2e", "path": null },
-    { "ecosystem": "cocoapods", "name": "x", "path": null }
+    {
+      "ecosystem": "pypi",
+      "name": "numpy",
+      "path": "v1/pypi/numpy.json"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "Scikit_Learn",
+      "path": "v1/pypi/scikit-learn.json"
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "zope.interface",
+      "path": "v1/pypi/zope-interface.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "lodash",
+      "path": "v1/npm/lodash.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/Node",
+      "path": "v1/npm/@types/node.json"
+    },
+    {
+      "ecosystem": "maven",
+      "name": "com.google.guava:guava",
+      "path": "v1/maven/com.google.guava/guava.json"
+    },
+    {
+      "ecosystem": "crates",
+      "name": "serde_json",
+      "path": "v1/crates/serde-json.json"
+    },
+    {
+      "ecosystem": "go",
+      "name": "github.com/gorilla/mux",
+      "path": "v1/go/github.com/gorilla/mux.json"
+    },
+    {
+      "ecosystem": "packagist",
+      "name": "Monolog/Monolog",
+      "path": "v1/packagist/monolog/monolog.json"
+    },
+    {
+      "ecosystem": "nuget",
+      "name": "Newtonsoft.Json",
+      "path": "v1/nuget/newtonsoft.json.json"
+    },
+    {
+      "ecosystem": "npm",
+      "name": "../etc/passwd",
+      "path": null
+    },
+    {
+      "ecosystem": "npm",
+      "name": "a/b",
+      "path": null
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@scope/a/b",
+      "path": null
+    },
+    {
+      "ecosystem": "go",
+      "name": "example.com/../x",
+      "path": null
+    },
+    {
+      "ecosystem": "go",
+      "name": "example.com//x",
+      "path": null
+    },
+    {
+      "ecosystem": "maven",
+      "name": "guava",
+      "path": null
+    },
+    {
+      "ecosystem": "maven",
+      "name": "a:b:c",
+      "path": null
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "",
+      "path": null
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "num py",
+      "path": null
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "x?y=1",
+      "path": null
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "%2e%2e",
+      "path": null
+    },
+    {
+      "ecosystem": "cocoapods",
+      "name": "x",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "python/builtins",
+      "path": "v1/std/python/builtins.json"
+    },
+    {
+      "ecosystem": "std",
+      "name": "Python/os.path",
+      "path": "v1/std/python/os.path.json"
+    },
+    {
+      "ecosystem": "std",
+      "name": "python/_collections_abc",
+      "path": "v1/std/python/_collections_abc.json"
+    },
+    {
+      "ecosystem": "std",
+      "name": "javascript/Array",
+      "path": "v1/std/javascript/Array.json"
+    },
+    {
+      "ecosystem": "std",
+      "name": "java/java.util",
+      "path": "v1/std/java/java.util.json"
+    },
+    {
+      "ecosystem": "std",
+      "name": "rust/alloc.vec",
+      "path": "v1/std/rust/alloc.vec.json"
+    },
+    {
+      "ecosystem": "std",
+      "name": "go/net/http",
+      "path": "v1/std/go/net/http.json"
+    },
+    {
+      "ecosystem": "std",
+      "name": "cobol/core",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "python",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "python/",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "python/../etc",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "python/os path",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "go/net/../x",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "rust/serde",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "constructor/x",
+      "path": null
+    },
+    {
+      "ecosystem": "std",
+      "name": "__proto__/x",
+      "path": null
+    }
   ],
   "versions": [
-    { "version": "1.26.4", "range": null, "in": true },
-    { "version": null, "range": null, "in": true },
-    { "version": null, "range": "*", "in": true },
-    { "version": null, "range": ">=1.0", "in": false },
-    { "version": "1.26.4", "range": ">=1.20 <2", "in": true },
-    { "version": "2.0.0", "range": ">=1.20 <2", "in": false },
-    { "version": "1.19.9", "range": ">=1.20,<2", "in": false },
-    { "version": "1.2", "range": "1.2.0", "in": true },
-    { "version": "1.2.1", "range": "=1.2", "in": false },
-    { "version": "v3.1.0", "range": ">3", "in": true },
-    { "version": "2.0.0-rc.1", "range": ">=2.0.0", "in": false },
-    { "version": "2.0.0-rc.1", "range": "<2.0.0", "in": true },
-    { "version": "2.0.0", "range": ">2.0.0-rc.1", "in": true },
-    { "version": "1.26.4+local", "range": "<=1.26.4", "in": true },
-    { "version": "1.0", "range": ">=banana", "in": false },
-    { "version": "banana", "range": ">=1.0", "in": false },
-    { "version": "1.0", "range": ">= 1.0", "in": false },
-    { "version": "10.0", "range": ">9.10", "in": true }
+    {
+      "version": "1.26.4",
+      "range": null,
+      "in": true
+    },
+    {
+      "version": null,
+      "range": null,
+      "in": true
+    },
+    {
+      "version": null,
+      "range": "*",
+      "in": true
+    },
+    {
+      "version": null,
+      "range": ">=1.0",
+      "in": false
+    },
+    {
+      "version": "1.26.4",
+      "range": ">=1.20 <2",
+      "in": true
+    },
+    {
+      "version": "2.0.0",
+      "range": ">=1.20 <2",
+      "in": false
+    },
+    {
+      "version": "1.19.9",
+      "range": ">=1.20,<2",
+      "in": false
+    },
+    {
+      "version": "1.2",
+      "range": "1.2.0",
+      "in": true
+    },
+    {
+      "version": "1.2.1",
+      "range": "=1.2",
+      "in": false
+    },
+    {
+      "version": "v3.1.0",
+      "range": ">3",
+      "in": true
+    },
+    {
+      "version": "2.0.0-rc.1",
+      "range": ">=2.0.0",
+      "in": false
+    },
+    {
+      "version": "2.0.0-rc.1",
+      "range": "<2.0.0",
+      "in": true
+    },
+    {
+      "version": "2.0.0",
+      "range": ">2.0.0-rc.1",
+      "in": true
+    },
+    {
+      "version": "1.26.4+local",
+      "range": "<=1.26.4",
+      "in": true
+    },
+    {
+      "version": "1.0",
+      "range": ">=banana",
+      "in": false
+    },
+    {
+      "version": "banana",
+      "range": ">=1.0",
+      "in": false
+    },
+    {
+      "version": "1.0",
+      "range": ">= 1.0",
+      "in": false
+    },
+    {
+      "version": "10.0",
+      "range": ">9.10",
+      "in": true
+    }
   ],
   "baseUrls": [
-    { "raw": "https://example.github.io/ponder-index", "normalized": "https://example.github.io/ponder-index/" },
-    { "raw": "https://example.github.io/ponder-index/", "normalized": "https://example.github.io/ponder-index/" },
-    { "raw": "http://localhost:8123/idx", "normalized": "http://localhost:8123/idx/" },
-    { "raw": "http://127.0.0.1:8123/", "normalized": "http://127.0.0.1:8123/" },
-    { "raw": "http://example.com/", "normalized": null },
-    { "raw": "ftp://example.com/", "normalized": null },
-    { "raw": "file:///C:/index/", "normalized": null },
-    { "raw": "https://user:pw@example.com/", "normalized": null },
-    { "raw": "https://example.com/?q=1", "normalized": null },
-    { "raw": "not a url", "normalized": null }
+    {
+      "raw": "https://example.github.io/ponder-index",
+      "normalized": "https://example.github.io/ponder-index/"
+    },
+    {
+      "raw": "https://example.github.io/ponder-index/",
+      "normalized": "https://example.github.io/ponder-index/"
+    },
+    {
+      "raw": "http://localhost:8123/idx",
+      "normalized": "http://localhost:8123/idx/"
+    },
+    {
+      "raw": "http://127.0.0.1:8123/",
+      "normalized": "http://127.0.0.1:8123/"
+    },
+    {
+      "raw": "http://example.com/",
+      "normalized": null
+    },
+    {
+      "raw": "ftp://example.com/",
+      "normalized": null
+    },
+    {
+      "raw": "file:///C:/index/",
+      "normalized": null
+    },
+    {
+      "raw": "https://user:pw@example.com/",
+      "normalized": null
+    },
+    {
+      "raw": "https://example.com/?q=1",
+      "normalized": null
+    },
+    {
+      "raw": "not a url",
+      "normalized": null
+    }
   ],
   "indexFiles": [
     {
       "name": "valid file, one document",
-      "key": { "ecosystem": "pypi", "name": "mathutils" },
-      "json": {
-        "ponderIndex": 1, "ecosystem": "pypi", "name": "mathutils",
-        "documents": [ { "versions": ">=1.0", "ponder": { "version": 1, "library": { "name": "mathutils" }, "animations": { "abs": { "symbol": "py:mathutils.abs", "title": "abs", "actors": { "d": { "type": "circle" } }, "slides": [ { "caption": "x" } ] } } } } ]
+      "key": {
+        "ecosystem": "pypi",
+        "name": "mathutils"
       },
-      "ok": true, "documents": 1
+      "json": {
+        "ponderIndex": 1,
+        "ecosystem": "pypi",
+        "name": "mathutils",
+        "documents": [
+          {
+            "versions": ">=1.0",
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "mathutils"
+              },
+              "animations": {
+                "abs": {
+                  "symbol": "py:mathutils.abs",
+                  "title": "abs",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {
+                      "caption": "x"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "documents": 1
     },
     {
       "name": "name normalization: Math_Utils is mathutils? no, but math-utils equals math_utils",
-      "key": { "ecosystem": "pypi", "name": "math_utils" },
-      "json": {
-        "ponderIndex": 1, "ecosystem": "pypi", "name": "Math-Utils",
-        "documents": [ { "ponder": { "version": 1, "library": { "name": "math.utils" }, "animations": { "a": { "symbol": "py:math_utils.f", "title": "f", "actors": { "d": { "type": "circle" } }, "slides": [ {} ] } } } } ]
+      "key": {
+        "ecosystem": "pypi",
+        "name": "math_utils"
       },
-      "ok": true, "documents": 1
+      "json": {
+        "ponderIndex": 1,
+        "ecosystem": "pypi",
+        "name": "Math-Utils",
+        "documents": [
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "math.utils"
+              },
+              "animations": {
+                "a": {
+                  "symbol": "py:math_utils.f",
+                  "title": "f",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "documents": 1
     },
     {
       "name": "file for another package is rejected as a whole",
-      "key": { "ecosystem": "npm", "name": "lodash" },
-      "json": { "ponderIndex": 1, "ecosystem": "npm", "name": "underscore", "documents": [] },
-      "ok": false, "documents": 0, "problemContains": "not lodash"
+      "key": {
+        "ecosystem": "npm",
+        "name": "lodash"
+      },
+      "json": {
+        "ponderIndex": 1,
+        "ecosystem": "npm",
+        "name": "underscore",
+        "documents": []
+      },
+      "ok": false,
+      "documents": 0,
+      "problemContains": "not lodash"
     },
     {
       "name": "file for another ecosystem is rejected",
-      "key": { "ecosystem": "npm", "name": "lodash" },
-      "json": { "ponderIndex": 1, "ecosystem": "pypi", "name": "lodash", "documents": [] },
-      "ok": false, "documents": 0, "problemContains": "ecosystem"
+      "key": {
+        "ecosystem": "npm",
+        "name": "lodash"
+      },
+      "json": {
+        "ponderIndex": 1,
+        "ecosystem": "pypi",
+        "name": "lodash",
+        "documents": []
+      },
+      "ok": false,
+      "documents": 0,
+      "problemContains": "ecosystem"
     },
     {
       "name": "unknown format version",
-      "key": { "ecosystem": "npm", "name": "lodash" },
-      "json": { "ponderIndex": 2, "ecosystem": "npm", "name": "lodash", "documents": [] },
-      "ok": false, "documents": 0, "problemContains": "format"
+      "key": {
+        "ecosystem": "npm",
+        "name": "lodash"
+      },
+      "json": {
+        "ponderIndex": 2,
+        "ecosystem": "npm",
+        "name": "lodash",
+        "documents": []
+      },
+      "ok": false,
+      "documents": 0,
+      "problemContains": "format"
     },
     {
       "name": "a UTF-8 byte order mark (Notepad) is ignored",
-      "key": { "ecosystem": "npm", "name": "lodash" },
+      "key": {
+        "ecosystem": "npm",
+        "name": "lodash"
+      },
       "text": "﻿{\"ponderIndex\":1,\"ecosystem\":\"npm\",\"name\":\"lodash\",\"documents\":[{\"ponder\":{\"version\":1,\"library\":{\"name\":\"lodash\"},\"animations\":{\"a\":{\"symbol\":\"js:lodash#chunk\",\"title\":\"t\",\"actors\":{\"d\":{\"type\":\"circle\"}},\"slides\":[{}]}}}}]}",
-      "ok": true, "documents": 1
+      "ok": true,
+      "documents": 1
     },
     {
       "name": "not JSON",
-      "key": { "ecosystem": "npm", "name": "lodash" },
+      "key": {
+        "ecosystem": "npm",
+        "name": "lodash"
+      },
       "text": "<html>404 Not Found</html>",
-      "ok": false, "documents": 0, "problemContains": "JSON"
+      "ok": false,
+      "documents": 0,
+      "problemContains": "JSON"
     },
     {
       "name": "invalid entries are dropped one by one, valid ones kept",
-      "key": { "ecosystem": "npm", "name": "lodash" },
+      "key": {
+        "ecosystem": "npm",
+        "name": "lodash"
+      },
       "json": {
-        "ponderIndex": 1, "ecosystem": "npm", "name": "lodash",
+        "ponderIndex": 1,
+        "ecosystem": "npm",
+        "name": "lodash",
         "documents": [
-          { "ponder": { "version": 1, "library": { "name": "lodash" }, "animations": { "bad": { "symbol": "js:lodash#chunk", "title": "t", "actors": { "d": { "type": "cirle" } }, "slides": [ {} ] } } } },
-          { "ponder": { "version": 1, "library": { "name": "underscore" }, "animations": { "a": { "symbol": "js:lodash#chunk", "title": "t", "actors": { "d": { "type": "circle" } }, "slides": [ {} ] } } } },
-          { "versions": 5, "ponder": { "version": 1, "library": { "name": "lodash" }, "animations": { "a": { "symbol": "js:lodash#chunk", "title": "t", "actors": { "d": { "type": "circle" } }, "slides": [ {} ] } } } },
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "lodash"
+              },
+              "animations": {
+                "bad": {
+                  "symbol": "js:lodash#chunk",
+                  "title": "t",
+                  "actors": {
+                    "d": {
+                      "type": "cirle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "underscore"
+              },
+              "animations": {
+                "a": {
+                  "symbol": "js:lodash#chunk",
+                  "title": "t",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "versions": 5,
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "lodash"
+              },
+              "animations": {
+                "a": {
+                  "symbol": "js:lodash#chunk",
+                  "title": "t",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          },
           "nonsense",
-          { "versions": "<5", "ponder": { "version": 1, "library": { "name": "lodash" }, "animations": { "chunk": { "symbol": "js:lodash#chunk", "title": "How chunk() works", "actors": { "d": { "type": "circle" } }, "slides": [ {} ] } } } }
+          {
+            "versions": "<5",
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "lodash"
+              },
+              "animations": {
+                "chunk": {
+                  "symbol": "js:lodash#chunk",
+                  "title": "How chunk() works",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          }
         ]
       },
-      "ok": true, "documents": 1, "problemContains": "documents[0]"
+      "ok": true,
+      "documents": 1,
+      "problemContains": "documents[0]"
     },
     {
       "name": "maven needs the group to match",
-      "key": { "ecosystem": "maven", "name": "com.example:math-utils" },
+      "key": {
+        "ecosystem": "maven",
+        "name": "com.example:math-utils"
+      },
       "json": {
-        "ponderIndex": 1, "ecosystem": "maven", "name": "com.example:math-utils",
+        "ponderIndex": 1,
+        "ecosystem": "maven",
+        "name": "com.example:math-utils",
         "documents": [
-          { "ponder": { "version": 1, "library": { "name": "math-utils" }, "animations": { "a": { "symbol": "com.example.M#f()", "title": "t", "actors": { "d": { "type": "circle" } }, "slides": [ {} ] } } } },
-          { "ponder": { "version": 1, "library": { "group": "com.example", "name": "math-utils" }, "animations": { "a": { "symbol": "com.example.M#f()", "title": "t", "actors": { "d": { "type": "circle" } }, "slides": [ {} ] } } } }
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "math-utils"
+              },
+              "animations": {
+                "a": {
+                  "symbol": "com.example.M#f()",
+                  "title": "t",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "group": "com.example",
+                "name": "math-utils"
+              },
+              "animations": {
+                "a": {
+                  "symbol": "com.example.M#f()",
+                  "title": "t",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          }
         ]
       },
-      "ok": true, "documents": 1
+      "ok": true,
+      "documents": 1
+    },
+    {
+      "name": "a standard-library file",
+      "key": {
+        "ecosystem": "std",
+        "name": "python/builtins"
+      },
+      "json": {
+        "ponderIndex": 1,
+        "ecosystem": "std",
+        "name": "python/builtins",
+        "documents": [
+          {
+            "versions": ">=3.8",
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "python/builtins"
+              },
+              "animations": {
+                "sorted": {
+                  "symbol": "py:builtins.sorted",
+                  "title": "How sorted() works",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "documents": 1
+    },
+    {
+      "name": "a standard-library file must name the same module",
+      "key": {
+        "ecosystem": "std",
+        "name": "python/builtins"
+      },
+      "json": {
+        "ponderIndex": 1,
+        "ecosystem": "std",
+        "name": "python/builtins",
+        "documents": [
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "python/itertools"
+              },
+              "animations": {
+                "sorted": {
+                  "symbol": "py:builtins.sorted",
+                  "title": "How sorted() works",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "documents": 0,
+      "problemContains": "is not python/builtins"
+    },
+    {
+      "name": "an entry for a newer Ponder is skipped with a clear reason",
+      "key": {
+        "ecosystem": "std",
+        "name": "python/builtins"
+      },
+      "json": {
+        "ponderIndex": 1,
+        "ecosystem": "std",
+        "name": "python/builtins",
+        "documents": [
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "python/builtins"
+              },
+              "animations": {
+                "sorted": {
+                  "symbol": "py:builtins.sorted",
+                  "title": "How sorted() works",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              },
+              "requires": [
+                "tables"
+              ]
+            }
+          },
+          {
+            "ponder": {
+              "version": 1,
+              "library": {
+                "name": "python/builtins"
+              },
+              "animations": {
+                "sorted": {
+                  "symbol": "py:builtins.sorted",
+                  "title": "How sorted() works",
+                  "actors": {
+                    "d": {
+                      "type": "circle"
+                    }
+                  },
+                  "slides": [
+                    {}
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ok": true,
+      "documents": 1,
+      "problemContains": "newer Ponder"
     }
   ]
 }

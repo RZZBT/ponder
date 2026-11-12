@@ -21,8 +21,8 @@ interface PonderResolver {
 
     fun resolveAt(file: PsiFile, offset: Int): ResolvedSymbol?
 
-    /** Why [resolveAt] found nothing, in words a user can act on. */
-    fun explain(file: PsiFile, offset: Int): String
+    /** Why [resolveAt] found nothing, as a problem with steps to try. */
+    fun explain(file: PsiFile, offset: Int): dev.ponder.matching.PonderProblem
 
     /** The `symbol` string for the declaration or call at [offset], for library authors. */
     fun authoringSymbol(file: PsiFile, offset: Int): String?

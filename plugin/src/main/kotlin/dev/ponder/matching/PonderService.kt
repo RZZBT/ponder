@@ -59,10 +59,12 @@ sealed interface MatchOutcome {
         val packageKey: PackageKey? = null,
         /** The resolved declaration, when there was one (needed to match a fetched index without PSI). */
         val symbol: SymbolIdentity? = null,
+        /** What the user sees when nothing better turns up (local folders, the online index). */
+        val problem: PonderProblem? = null,
     ) : MatchOutcome
 
     enum class Reason {
-        /** Nothing resolved, or the declaration is outside the project and its libraries (e.g. the JDK). */
+        /** Nothing resolved, or the declaration is outside the project, its libraries and the standard library. */
         NOT_APPLICABLE,
         NO_METADATA,
         INVALID_METADATA,
@@ -87,9 +89,9 @@ class PonderService(private val project: Project) {
     /** Read action required. */
     fun findAt(file: PsiFile, offset: Int): MatchOutcome {
         val resolver = PonderResolver.forFile(file)
-            ?: return MatchOutcome.NotFound(MatchOutcome.Reason.NOT_APPLICABLE, "this file type is not supported")
+            ?: return PonderProblems.unsupportedFile().let { MatchOutcome.NotFound(MatchOutcome.Reason.NOT_APPLICABLE, it.title, problem = it) }
         val symbol = resolver.resolveAt(file, offset)
-            ?: return MatchOutcome.NotFound(MatchOutcome.Reason.NOT_APPLICABLE, resolver.explain(file, offset))
+            ?: return resolver.explain(file, offset).let { MatchOutcome.NotFound(MatchOutcome.Reason.NOT_APPLICABLE, it.title, problem = it) }
         return evaluate(symbol)
     }
 
@@ -100,9 +102,20 @@ class PonderService(private val project: Project) {
         if (fromLibrary !is MatchOutcome.NotFound) return fromLibrary
         if (fromLibrary.reason == MatchOutcome.Reason.NOT_APPLICABLE) return fromLibrary
 
-        val key = PackageKeys.of(identity, project.service<PonderRegistry>(), project) ?: return fromLibrary
+        val key = PackageKeys.of(identity, project.service<PonderRegistry>(), project)
+            ?: return fromLibrary.copy(problem = fromLibrary.problem ?: noKeyProblem(identity))
         external(identity, key)?.let { return it }
         return fromLibrary.copy(packageKey = key, symbol = identity)
+    }
+
+    /** Nothing can be looked up elsewhere: the user's own code, or a library Ponder cannot identify for sure. */
+    private fun noKeyProblem(identity: SymbolIdentity): PonderProblem = when (val p = identity.provenance) {
+        is Provenance.ProjectModule -> PonderProblems.ownCode(identity.displayName)
+        is Provenance.Package ->
+            if (PackageKeys.isOwnCode(project, p.root)) PonderProblems.ownCode(identity.displayName)
+            else PonderProblems.unknownLibrary(identity.displayName, p.manifestName ?: p.root.name)
+        is Provenance.Library -> PonderProblems.unknownLibrary(identity.displayName, libraryName(identity))
+        is Provenance.StandardLibrary -> PonderProblems.noAnimationYet(identity.displayName, "the ${p.display}")
     }
 
     /** Local folders, then the online-index cache. No network. */
@@ -124,9 +137,17 @@ class PonderService(private val project: Project) {
     private fun evaluateLibrary(identity: SymbolIdentity): MatchOutcome {
         val registry = project.service<PonderRegistry>()
         val loaded = registry.documentFor(identity.provenance)
-            ?: return MatchOutcome.NotFound(MatchOutcome.Reason.NO_METADATA, noMetadataDetail(identity))
+            ?: return MatchOutcome.NotFound(
+                MatchOutcome.Reason.NO_METADATA, noMetadataDetail(identity),
+                problem = (identity.provenance as? Provenance.ProjectModule)?.let { PonderProblems.ownCode(identity.displayName) },
+            )
         val document = loaded.document
-            ?: return MatchOutcome.NotFound(MatchOutcome.Reason.INVALID_METADATA, loaded.report.errors.firstOrNull()?.toString())
+            ?: return loaded.report.errors.firstOrNull()?.toString().let { first ->
+                val library = libraryName(identity)
+                val problem = if (loaded.report.needsUpdate) PonderProblems.needsUpdate(loaded.report.errors.firstOrNull()?.message ?: "This animation is meant for a newer Ponder.")
+                else PonderProblems.brokenLibraryFile(library, first ?: "it is not valid")
+                MatchOutcome.NotFound(MatchOutcome.Reason.INVALID_METADATA, first, problem = problem)
+            }
 
         val animation = document.findAny(identity.candidates)
             ?: return MatchOutcome.NotFound(MatchOutcome.Reason.SYMBOL_NOT_DOCUMENTED, identity.signature)
@@ -136,10 +157,11 @@ class PonderService(private val project: Project) {
             // the file was found in the module that declares the symbol, so there is nothing else to check
             is Provenance.ProjectModule -> LibraryVerdict.Unverifiable
             is Provenance.Package -> verifyPackage(document, p)
+            is Provenance.StandardLibrary -> LibraryVerdict.Verified(LibraryEvidence.Source.STANDARD_LIBRARY)
         }
         if (verdict is LibraryVerdict.Mismatch) {
             service<PonderDiagnostics>().record(Severity.WARNING, loaded.description, "Ignored: ${verdict.reason}")
-            return MatchOutcome.NotFound(MatchOutcome.Reason.LIBRARY_MISMATCH, verdict.reason)
+            return MatchOutcome.NotFound(MatchOutcome.Reason.LIBRARY_MISMATCH, verdict.reason, problem = PonderProblems.libraryMismatch(verdict.reason))
         }
         return MatchOutcome.Found(PonderMatch(animation, document, identity, verdict, loaded.description))
     }
@@ -150,9 +172,17 @@ class PonderService(private val project: Project) {
         else LibraryVerdict.Mismatch("ponder.json declares library ${document.library.name}, but the package is $actual.")
     }
 
+    private fun libraryName(identity: SymbolIdentity): String = when (val p = identity.provenance) {
+        is Provenance.Library -> p.libraryName?.substringAfter(": ")?.substringBeforeLast(':') ?: p.root.name
+        is Provenance.ProjectModule -> p.module.name
+        is Provenance.Package -> p.manifestName ?: p.root.name
+        is Provenance.StandardLibrary -> "The ${p.display}"
+    }
+
     private fun noMetadataDetail(identity: SymbolIdentity): String = when (val p = identity.provenance) {
         is Provenance.Library -> "${p.libraryName ?: p.root.name} has no META-INF/ponder/ponder.json"
         is Provenance.ProjectModule -> "${identity.displayName} is declared in this project (module ${p.module.name}), not in a library"
         is Provenance.Package -> "${p.manifestName ?: p.root.name} has no ponder.json (looked in ${p.root.presentableUrl})"
+        is Provenance.StandardLibrary -> "${identity.displayName} is part of the ${p.display}"
     }
 }

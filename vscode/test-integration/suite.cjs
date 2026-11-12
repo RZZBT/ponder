@@ -50,6 +50,12 @@ async function run() {
     await expect('IntStack } = require', 3, 'stack-new');
     await expect('localClamp(-4', 3, null);
     await expect('Math.abs(', 6, null);
+    // Ponder 0.3: a built-in is recognised as the standard library, ready for local folders and the index
+    const abs = await resolve('Math.abs(', 6);
+    assert.equal(abs.located && abs.located.kind, 'std', `Math.abs should be the standard library: ${JSON.stringify(abs.located ?? abs.reason)}`);
+    assert.equal(abs.located.keyName, 'javascript/Math');
+    assert.ok(abs.located.candidates.includes('js:std#Math.abs'), JSON.stringify(abs.located.candidates));
+    results.push(`std ${abs.located.keyName} ${abs.located.candidates[0]}  <- Math.abs(`);
   } finally {
     console.log('\n' + results.join('\n') + '\n');
   }
